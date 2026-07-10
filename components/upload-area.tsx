@@ -1,0 +1,167 @@
+'use client'
+
+import { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
+
+interface UploadAreaProps {
+  onUploadComplete: (uploadId: string, fileName: string) => void
+  isAnalyzing?: boolean
+}
+
+export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadAreaProps) {
+  const [isDragActive, setIsDragActive] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [error, setError] = useState('')
+  const [progress, setProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File size must be less than 10MB')
+      return
+    }
+
+    setError('')
+    setIsUploading(true)
+    setProgress(0)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Upload failed')
+        setIsUploading(false)
+        return
+      }
+
+      setProgress(100)
+      setIsUploading(false)
+      onUploadComplete(data.uploadId, data.fileName)
+    } catch (err) {
+      setError('An error occurred during upload')
+      setIsUploading(false)
+    }
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setIsDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setIsDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragActive(false)
+
+    const files = e.dataTransfer.files
+    if (files && files[0]) {
+      handleFile(files[0])
+    }
+  }
+
+  return (
+    <div>
+      <div
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        className={`relative border-2 border-dashed rounded-lg p-12 text-center transition ${
+          isDragActive
+            ? 'border-primary bg-primary/5'
+            : 'border-border bg-secondary/30 hover:border-primary'
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+          className="hidden"
+          disabled={isUploading || isAnalyzing}
+        />
+
+        <div className="space-y-4">
+          <div className="flex justify-center">
+            <svg
+              className="w-16 h-16 text-primary opacity-60"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M2 12a10 10 0 1020 0 10 10 0 00-20 0z"
+              />
+            </svg>
+          </div>
+
+          <div>
+            <p className="text-lg font-semibold text-foreground mb-1">
+              Drag and drop your X-ray image here
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              or
+            </p>
+          </div>
+
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || isAnalyzing}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            {isUploading ? 'Uploading...' : isAnalyzing ? 'Analyzing...' : 'Select File'}
+          </Button>
+
+          <p className="text-xs text-muted-foreground">
+            JPG, PNG, DICOM up to 10MB
+          </p>
+        </div>
+      </div>
+
+      {progress > 0 && progress < 100 && (
+        <div className="mt-4">
+          <div className="w-full bg-secondary rounded-full h-2">
+            <div
+              className="bg-primary h-2 rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">{progress}% uploaded</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
+      {progress === 100 && !isAnalyzing && (
+        <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+          Upload complete! Analyzing your X-ray...
+        </div>
+      )}
+    </div>
+  )
+}
