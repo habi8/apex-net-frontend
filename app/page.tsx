@@ -60,66 +60,45 @@ export default function LandingPage() {
             Get rapid, accurate chest X-ray analysis with detailed findings and clinical recommendations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/sign-up">
+            <Link href="/dashboard">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-medium">
-                Start Free Trial
+                Test X-Ray
               </Button>
             </Link>
-            <Button 
-              variant="outline"
-              className="text-foreground border-border hover:bg-secondary px-8 py-6 text-base font-medium"
-            >
-              Learn More
-            </Button>
+            <Link href="/auth/sign-up">
+              <Button 
+                variant="outline"
+                className="text-foreground border-border hover:bg-secondary px-8 py-6 text-base font-medium"
+              >
+                Get Started
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-secondary/50 border-y border-border py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-3xl font-bold text-foreground text-center mb-12">Key Features</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: '⚡',
-                title: 'Rapid Analysis',
-                description: 'Get detailed X-ray analysis results in seconds, not hours'
-              },
-              {
-                icon: '🎯',
-                title: 'High Accuracy',
-                description: 'State-of-the-art AI model trained on thousands of X-ray images'
-              },
-              {
-                icon: '🔒',
-                title: 'Secure & Compliant',
-                description: 'Your data is encrypted and stored securely with HIPAA compliance'
-              },
-              {
-                icon: '📊',
-                title: 'Detailed Reports',
-                description: 'Get comprehensive findings with confidence scores and recommendations'
-              },
-              {
-                icon: '📱',
-                title: 'Easy Upload',
-                description: 'Simply drag and drop your X-ray image to get started'
-              },
-              {
-                icon: '📈',
-                title: 'Analysis History',
-                description: 'Track and compare all your previous analyses in one place'
-              }
-            ].map((feature, idx) => (
-              <div key={idx} className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition">
-                <div className="text-4xl mb-3">{feature.icon}</div>
-                <h4 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h4>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
-            ))}
-          </div>
+      {/* Animated Gradient Section */}
+      <section className="relative overflow-hidden py-32 border-y border-border">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent" style={{
+          animation: 'gradient-shift 8s ease-in-out infinite'
+        }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <h3 className="text-4xl font-bold text-foreground">Advanced AI Technology</h3>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Powered by state-of-the-art deep learning models for accurate medical imaging analysis
+          </p>
         </div>
+        <style jsx>{`
+          @keyframes gradient-shift {
+            0%, 100% {
+              opacity: 0.5;
+            }
+            50% {
+              opacity: 1;
+            }
+          }
+        `}</style>
       </section>
 
       {/* Footer */}
