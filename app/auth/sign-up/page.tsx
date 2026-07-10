@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Logo } from '@/components/logo'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -56,18 +58,16 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <svg width="48" height="48" viewBox="0 0 48 48" className="text-primary">
-              <g fill="currentColor" fillOpacity="0.7">
-                <path d="M24 8c-8 0-12 6-12 10v14c0 4 4 8 12 8s12-4 12-8V18c0-4-4-10-12-10z" />
-                <path d="M18 18a1 1 0 10-2 0 1 1 0 002 0m6 0a1 1 0 10-2 0 1 1 0 002 0m6 0a1 1 0 10-2 0 1 1 0 002 0" />
-              </g>
-            </svg>
+            <Logo size={48} />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">APEX-Net</h1>
-          <p className="text-muted-foreground">AI-Powered Chest X-ray Analysis</p>
+          <h1 className="text-3xl font-bold text-foreground mb-1">APEX-Net</h1>
+          <p className="text-muted-foreground text-sm">Create your account</p>
         </div>
 
         <div className="bg-card border border-border rounded-lg p-8 shadow-sm">
