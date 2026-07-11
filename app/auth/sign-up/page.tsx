@@ -63,10 +63,9 @@ export default function SignUpPage() {
       </div>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Logo size={48} />
+          <div className="flex justify-center mb-6">
+            <Logo size={120} />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">APEX-Net</h1>
           <p className="text-muted-foreground text-sm">Create your account</p>
         </div>
 

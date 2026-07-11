@@ -9,11 +9,17 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-    // Get theme from localStorage or system preference
-    const theme = localStorage.getItem('theme')
-    const isDarkMode = theme === 'dark' || 
-      (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    // Get theme from localStorage, default to light
+    const theme = localStorage.getItem('theme') || 'light'
+    const isDarkMode = theme === 'dark'
     setIsDark(isDarkMode)
+    // Apply theme on mount
+    const htmlElement = document.documentElement
+    if (isDarkMode) {
+      htmlElement.classList.add('dark')
+    } else {
+      htmlElement.classList.remove('dark')
+    }
   }, [])
 
   const toggleTheme = () => {
