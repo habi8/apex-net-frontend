@@ -9,7 +9,10 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-    const isDarkMode = document.documentElement.classList.contains('dark')
+    // Get theme from localStorage or system preference
+    const theme = localStorage.getItem('theme')
+    const isDarkMode = theme === 'dark' || 
+      (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
     setIsDark(isDarkMode)
   }, [])
 
