@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
     const fileName = `${user.id}/${Date.now()}-${file.name}`
     const buffer = await file.arrayBuffer()
 
-    // Upload to Supabase Storage
+    let storagePath = fileName
+    let storageWarning: string | null = null
+
+    // Upload to Supabase Storage when the bucket is configured. The app can
+    // still run mock analysis if storage is not provisioned yet.
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('xray-uploads')
       .upload(fileName, buffer, {
@@ -42,8 +46,10 @@ export async function POST(request: NextRequest) {
       })
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
+      console.warn('Storage upload skipped:', uploadError.message)
+      storageWarning = uploadError.message
+    } else {
+      storagePath = uploadData.path
     }
 
     // Store upload metadata in database
@@ -53,20 +59,26 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         file_name: file.name,
         file_size: file.size,
-        storage_path: uploadData.path,
+        storage_path: storagePath,
       })
       .select()
       .single()
 
     if (insertError) {
-      console.error('Database error:', insertError)
-      return NextResponse.json({ error: 'Failed to save upload record' }, { status: 500 })
+      console.warn('Upload metadata save skipped:', insertError.message)
+      return NextResponse.json({
+        success: true,
+        uploadId: `local-${Date.now()}`,
+        fileName: file.name,
+        warning: insertError.message,
+      })
     }
 
     return NextResponse.json({
       success: true,
       uploadId: uploadRecord.id,
-      fileName: uploadRecord.file_name
+      fileName: uploadRecord.file_name,
+      warning: storageWarning,
     })
   } catch (error) {
     console.error('Upload error:', error)

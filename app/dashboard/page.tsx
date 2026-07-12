@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { UploadArea } from '@/components/upload-area'
 import { PredictionResults } from '@/components/prediction-results'
 import { AnalysisHistory } from '@/components/analysis-history'
+import { Logo } from '@/components/logo'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -34,27 +36,16 @@ export default function DashboardPage() {
   async function handleUploadComplete(uploadId: string, fileName: string) {
     setIsAnalyzing(true)
     try {
-      const response = await fetch('/api/predict', {
-        method: 'POST',
-        body: new FormData(Object.assign(new FormData(), {
-          append: function(key: string, value: any) {
-            if (key === 'xrayUploadId') FormData.prototype.append.call(this, key, uploadId)
-            if (key === 'fileName') FormData.prototype.append.call(this, key, fileName)
-          }
-        })),
-      })
-
-      // Use a simpler approach - just send the uploadId
       const formData = new FormData()
       formData.append('xrayUploadId', uploadId)
       formData.append('fileName', fileName)
 
-      const response2 = await fetch('/api/predict', {
+      const response = await fetch('/api/predict', {
         method: 'POST',
         body: formData,
       })
 
-      const data = await response2.json()
+      const data = await response.json()
       
       if (data.success) {
         setCurrentPrediction(data.prediction)
@@ -76,18 +67,14 @@ export default function DashboardPage() {
       <nav className="border-b border-border bg-card shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <svg width="32" height="32" viewBox="0 0 48 48" className="text-primary">
-              <g fill="currentColor" fillOpacity="0.7">
-                <path d="M24 8c-8 0-12 6-12 10v14c0 4 4 8 12 8s12-4 12-8V18c0-4-4-10-12-10z" />
-                <path d="M18 18a1 1 0 10-2 0 1 1 0 002 0m6 0a1 1 0 10-2 0 1 1 0 002 0m6 0a1 1 0 10-2 0 1 1 0 002 0" />
-              </g>
-            </svg>
+            <Logo size={104} />
             <h1 className="text-xl font-bold text-foreground">APEX-Net</h1>
           </div>
           
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="text-sm text-muted-foreground">
-              Welcome, <span className="font-medium text-foreground">{user.email}</span>
+              Welcome, <span className="font-medium text-foreground">{getUserDisplayName(user)}</span>
             </div>
             <Button
               onClick={async () => {
@@ -155,5 +142,16 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+function getUserDisplayName(user: any) {
+  return (
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.identities?.[0]?.identity_data?.full_name ||
+    user.identities?.[0]?.identity_data?.name ||
+    user.email?.split('@')[0] ||
+    'User'
   )
 }

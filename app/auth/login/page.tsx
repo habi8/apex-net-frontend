@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -22,7 +21,7 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -33,9 +32,19 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      const session = sessionData.session ?? authData.session
+
+      if (sessionError || !session) {
+        setError(sessionError?.message ?? 'Sign in succeeded, but no browser session was stored. Try clearing site data and signing in again.')
+        setIsLoading(false)
+        return
+      }
+
+      router.replace('/dashboard')
+      router.refresh()
     } catch (err) {
-      setError('An error occurred during login')
+      setError(err instanceof Error ? err.message : 'An error occurred during login')
       setIsLoading(false)
     }
   }
@@ -48,7 +57,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <Logo size={120} />
+            <Logo size={168} />
           </div>
           <p className="text-muted-foreground text-sm">Sign in to your account</p>
         </div>
@@ -93,13 +102,13 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button
+            <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 rounded-lg transition"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            </button>
           </form>
 
           <p className="text-center text-muted-foreground text-sm mt-6">

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -64,7 +63,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <Logo size={120} />
+            <Logo size={168} />
           </div>
           <p className="text-muted-foreground text-sm">Create your account</p>
         </div>
@@ -139,13 +138,13 @@ export default function SignUpPage() {
               </div>
             )}
 
-            <Button
+            <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 rounded-lg transition"
+              className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
               {isLoading ? 'Creating account...' : 'Sign Up'}
-            </Button>
+            </button>
           </form>
 
           <p className="text-center text-muted-foreground text-sm mt-6">

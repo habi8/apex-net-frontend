@@ -6,9 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 interface AnalysisRecord {
   id: string
   created_at: string
-  xray_uploads: {
-    file_name: string
-  }
+  xray_uploads: { file_name: string } | { file_name: string }[] | null
   prediction_data: {
     findings: Array<{
       label: string
@@ -81,7 +79,9 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
       ) : (
         <div className="space-y-2">
           {history.map((record) => {
-            const topFinding = record.prediction_data.findings[0]
+            const upload = Array.isArray(record.xray_uploads)
+              ? record.xray_uploads[0]
+              : record.xray_uploads
             const maxConfidence = Math.max(
               ...record.prediction_data.findings.map(f => f.confidence)
             )
@@ -92,7 +92,7 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
                 className="p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition cursor-pointer"
               >
                 <p className="text-sm font-medium text-foreground truncate">
-                  {record.xray_uploads?.file_name || 'Unknown file'}
+                  {upload?.file_name || 'Unknown file'}
                 </p>
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-xs text-muted-foreground">

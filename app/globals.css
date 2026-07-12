@@ -81,7 +81,8 @@
   --sidebar-ring: #0066FF;
 }
 
-.dark {
+.dark,
+:root[data-theme='dark'] {
   color-scheme: dark;
   --background: #0F1725;
   --foreground: #F5F7FA;
@@ -117,7 +118,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not(.light) {
+  :root:not(.light):not([data-theme='light']) {
     color-scheme: dark;
     --background: #0F1725;
     --foreground: #F5F7FA;

@@ -1,61 +1,45 @@
 'use client'
 
+import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
+
+function applyTheme(theme: 'light' | 'dark') {
+  const htmlElement = document.documentElement
+  htmlElement.classList.remove('light', 'dark')
+  htmlElement.classList.add(theme)
+  htmlElement.dataset.theme = theme
+  localStorage.setItem('theme', theme)
+}
 
 export function ThemeToggle() {
   const [isDark, setIsDark] = useState(false)
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    // Get theme from localStorage, default to light
-    const theme = localStorage.getItem('theme') || 'light'
+    const theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
     const isDarkMode = theme === 'dark'
     setIsDark(isDarkMode)
-    // Apply theme on mount
-    const htmlElement = document.documentElement
-    if (isDarkMode) {
-      htmlElement.classList.add('dark')
-    } else {
-      htmlElement.classList.remove('dark')
-    }
+    applyTheme(theme)
   }, [])
 
   const toggleTheme = () => {
-    const htmlElement = document.documentElement
     const newIsDark = !isDark
-    
-    if (newIsDark) {
-      htmlElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      htmlElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-    
+    applyTheme(newIsDark ? 'dark' : 'light')
     setIsDark(newIsDark)
   }
 
-  if (!mounted) return null
-
   return (
-    <Button
-      variant="outline"
-      size="icon"
+    <button
+      type="button"
       onClick={toggleTheme}
-      className="rounded-lg border-border hover:bg-secondary"
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-sm transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? (
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 3v1m0 16v1m9-9h-1m-16 0H1m15.364 1.636l.707-.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M19 12a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+        <Sun className="size-5" aria-hidden="true" />
       ) : (
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
+        <Moon className="size-5" aria-hidden="true" />
       )}
-    </Button>
+    </button>
   )
 }

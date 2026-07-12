@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-export function Logo({ size = 40 }: { size?: number }) {
+export function Logo({ size = 96 }: { size?: number }) {
   return (
     <Image
       src="/apex-net-logo.png"
@@ -8,6 +8,7 @@ export function Logo({ size = 40 }: { size?: number }) {
       width={size}
       height={size}
       className="object-contain"
+      style={{ width: size, height: 'auto' }}
       priority
     />
   )
