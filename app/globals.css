@@ -1,8 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
+
+/* Cursor pointer for interactive elements */
+a,
+button,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='reset'] {
+  cursor: pointer;
+}
 
 @theme inline {
   --color-sidebar-ring: var(--sidebar-ring);
@@ -47,6 +59,9 @@
 
 :root {
   color-scheme: light;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
   --background: #FFFFFF;
   --foreground: #1A1F3A;
   --card: #FFFFFF;
@@ -84,6 +99,9 @@
 .dark,
 :root[data-theme='dark'] {
   color-scheme: dark;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
   --background: #0F1725;
   --foreground: #F5F7FA;
   --card: #1A2332;
@@ -120,6 +138,9 @@
 @media (prefers-color-scheme: dark) {
   :root:not(.light):not([data-theme='light']) {
     color-scheme: dark;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
     --background: #0F1725;
     --foreground: #F5F7FA;
     --card: #1A2332;
@@ -161,6 +182,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
   }
 }
 
@@ -170,5 +196,20 @@
   }
   50% {
     opacity: 1;
+  }
+}
+
+@layer components {
+  .glass-nav {
+    @apply backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-white/30 dark:border-white/10;
+  }
+  
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  
+  .font-mono-numeric {
+    font-family: var(--font-mono);
+    font-weight: 500;
   }
 }

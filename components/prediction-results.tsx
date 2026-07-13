@@ -49,7 +49,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
             <div key={idx} className={`border rounded-lg p-4 ${getSeverityColor(finding.severity)}`}>
               <div className="flex items-start justify-between mb-2">
                 <h4 className="font-semibold">{finding.label}</h4>
-                <span className={`text-sm font-bold ${getConfidenceColor(finding.confidence)}`}>
+                <span className={`text-sm font-bold font-mono-numeric ${getConfidenceColor(finding.confidence)}`}>
                   {(finding.confidence * 100).toFixed(1)}%
                 </span>
               </div>

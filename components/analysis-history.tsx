@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 interface AnalysisRecord {
@@ -87,24 +88,25 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
             )
             
             return (
-              <div
-                key={record.id}
-                className="p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition cursor-pointer"
-              >
-                <p className="text-sm font-medium text-foreground truncate">
-                  {upload?.file_name || 'Unknown file'}
-                </p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(record.created_at).toLocaleDateString()}
+              <Link key={record.id} href={`/history/${record.id}`}>
+                <div
+                  className="p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition cursor-pointer"
+                >
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {upload?.file_name || 'Unknown file'}
                   </p>
-                  <span className={`text-xs font-bold ${
-                    maxConfidence >= 0.5 ? 'text-red-600' : 'text-green-600'
-                  }`}>
-                    {(maxConfidence * 100).toFixed(0)}%
-                  </span>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(record.created_at).toLocaleDateString()}
+                    </p>
+                    <span className={`text-xs font-bold font-mono-numeric ${
+                      maxConfidence >= 0.5 ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {(maxConfidence * 100).toFixed(0)}%
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             )
           })}
         </div>

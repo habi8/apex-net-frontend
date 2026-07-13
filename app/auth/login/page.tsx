@@ -55,9 +55,11 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <Logo size={168} />
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-2">
+            <Link href="/">
+              <Logo size={252} />
+            </Link>
           </div>
           <p className="text-muted-foreground text-sm">Sign in to your account</p>
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { UploadArea } from '@/components/upload-area'
@@ -64,11 +65,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-border bg-card shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Logo size={104} />
-            <h1 className="text-xl font-bold text-foreground">APEX-Net</h1>
+            <Logo size={156} />
+            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
           </div>
           
           <div className="flex items-center gap-4">
@@ -76,6 +77,16 @@ export default function DashboardPage() {
             <div className="text-sm text-muted-foreground">
               Welcome, <span className="font-medium text-foreground">{getUserDisplayName(user)}</span>
             </div>
+            <Link href="/history">
+              <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
+                History
+              </Button>
+            </Link>
+            <Link href="/profile">
+              <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
+                Profile
+              </Button>
+            </Link>
             <Button
               onClick={async () => {
                 const supabase = createClient()
