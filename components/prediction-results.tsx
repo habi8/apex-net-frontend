@@ -20,15 +20,15 @@ interface PredictionResultsProps {
 function getSeverityColor(severity: string): string {
   switch (severity.toLowerCase()) {
     case 'severe':
-      return 'bg-red-50 border-red-200 text-red-900'
+      return 'bg-red-500/10 border-l-4 border-red-500/70 text-red-800 dark:text-red-200'
     case 'moderate':
-      return 'bg-yellow-50 border-yellow-200 text-yellow-900'
+      return 'bg-yellow-500/10 border-l-4 border-yellow-500/70 text-yellow-800 dark:text-yellow-200'
     case 'mild':
-      return 'bg-blue-50 border-blue-200 text-blue-900'
+      return 'bg-blue-500/10 border-l-4 border-blue-500/70 text-blue-800 dark:text-blue-200'
     case 'minimal':
-      return 'bg-green-50 border-green-200 text-green-900'
+      return 'bg-green-500/10 border-l-4 border-green-500/70 text-green-800 dark:text-green-200'
     default:
-      return 'bg-gray-50 border-gray-200 text-gray-900'
+      return 'bg-secondary/50 border-l-4 border-border text-foreground'
   }
 }
 
@@ -42,11 +42,11 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
   return (
     <div className="space-y-6">
       {/* Findings */}
-      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+      <div className="glass-card p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Key Findings</h3>
         <div className="space-y-3">
           {prediction.findings.map((finding, idx) => (
-            <div key={idx} className={`border rounded-lg p-4 ${getSeverityColor(finding.severity)}`}>
+            <div key={idx} className={`rounded-xl p-4 backdrop-blur-sm ${getSeverityColor(finding.severity)}`}>
               <div className="flex items-start justify-between mb-2">
                 <h4 className="font-semibold">{finding.label}</h4>
                 <span className={`text-sm font-bold font-mono-numeric ${getConfidenceColor(finding.confidence)}`}>
@@ -74,7 +74,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
       </div>
 
       {/* Overall Assessment */}
-      <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
+      <div className="glass-card p-6">
         <h3 className="text-lg font-semibold text-foreground mb-3">Overall Assessment</h3>
         <p className="text-foreground leading-relaxed">
           {prediction.overall_assessment}
@@ -82,7 +82,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
       </div>
 
       {/* Recommendations */}
-      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+      <div className="glass-card p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Clinical Recommendations</h3>
         <ul className="space-y-2">
           {prediction.recommendations.map((rec, idx) => (
@@ -101,7 +101,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
       </div>
 
       {/* Metadata */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground bg-secondary rounded-lg p-4">
+      <div className="flex items-center justify-between text-xs text-muted-foreground glass-card p-4">
         <div>
           <p>Analysis Date: {new Date(prediction.analysis_date).toLocaleString()}</p>
         </div>
@@ -110,7 +110,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
         </div>
       </div>
 
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
+      <div className="p-4 glass-card text-sm text-foreground">
         <p className="font-semibold mb-1">Disclaimer</p>
         <p>This analysis is AI-assisted and for reference only. Clinical diagnosis should be made by qualified healthcare professionals.</p>
       </div>

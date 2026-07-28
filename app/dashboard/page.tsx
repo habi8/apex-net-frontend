@@ -109,7 +109,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Average Confidence</p>
                   <p className="text-2xl font-bold text-primary">-</p>
                 </div>
-                <div className="pt-4 border-t border-border/60">
+                <div className="pt-4">
                   <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Model version</p>
                   <p className="font-mono text-sm text-foreground">APEX-v2.1</p>
                 </div>

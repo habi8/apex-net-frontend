@@ -176,8 +176,12 @@ input[type='reset'] {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  /* Only apply the default border to form/structural elements that opt in via Tailwind border utilities.
+     We do NOT apply borders to every element by default — that creates visible "panels" everywhere. */
+
+  /* Smooth color transitions for elements that DO have borders */
+  .border,
+  [class*='border-'] {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
@@ -207,6 +211,55 @@ input[type='reset'] {
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* Fade-in animations used across the homepage.
+   Elements start invisible + slightly translated, then animate to their final position.
+   Respect users who prefer reduced motion. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Staggered delays — apply via class on the element */
+.fade-in-1 { animation-delay: 0.05s; }
+.fade-in-2 { animation-delay: 0.15s; }
+.fade-in-3 { animation-delay: 0.25s; }
+.fade-in-4 { animation-delay: 0.35s; }
+.fade-in-5 { animation-delay: 0.45s; }
+.fade-in-6 { animation-delay: 0.55s; }
+.fade-in-7 { animation-delay: 0.65s; }
+.fade-in-8 { animation-delay: 0.75s; }
+.fade-in-9 { animation-delay: 0.85s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .fade-in-up {
+    animation: none;
   }
 }
 
@@ -572,39 +625,41 @@ input[type='reset'] {
     color: var(--foreground);
   }
 
-  /* Glass card - reusable for any elevated content surface */
+  /* Glass card - reusable elevated surface.
+     Uses an inner glow + soft outer shadow instead of a visible border, so the card
+     blends seamlessly with the page background rather than reading as a separate panel. */
   .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(15, 23, 37, 0.1);
+    background: rgba(255, 255, 255, 0.55);
+    border: none;
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
     border-radius: 1.25rem;
     box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.8) inset,
-      0 12px 36px -16px rgba(15, 23, 37, 0.18),
-      0 4px 12px -4px rgba(15, 23, 37, 0.08);
+      0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
+      0 8px 24px -12px rgba(15, 23, 37, 0.12),
+      0 2px 6px -2px rgba(15, 23, 37, 0.04);
   }
 
   :root[data-theme='dark'] .glass-card,
   .dark .glass-card {
-    background: rgba(15, 23, 37, 0.55);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 37, 0.5);
+    border: none;
     box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
-      0 12px 36px -16px rgba(0, 0, 0, 0.5),
-      0 4px 12px -4px rgba(0, 0, 0, 0.25);
+      0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+      0 8px 24px -12px rgba(0, 0, 0, 0.4),
+      0 2px 6px -2px rgba(0, 0, 0, 0.15);
   }
 
-  /* Glass card with danger coloring (profile delete zone) */
+  /* Glass card with danger coloring (profile delete zone) — kept for the action context */
   .glass-card-danger {
-    background: color-mix(in srgb, #ef4444 6%, rgba(255, 255, 255, 0.75));
-    border-color: rgba(239, 68, 68, 0.35);
+    background: color-mix(in srgb, #ef4444 5%, rgba(255, 255, 255, 0.55));
+    border: none;
   }
 
   :root[data-theme='dark'] .glass-card-danger,
   .dark .glass-card-danger {
-    background: color-mix(in srgb, #ef4444 12%, rgba(15, 23, 37, 0.6));
-    border-color: rgba(239, 68, 68, 0.45);
+    background: color-mix(in srgb, #ef4444 10%, rgba(15, 23, 37, 0.55));
+    border: none;
   }
 
   /* Glass input - visible borders + glassmorphic fill */

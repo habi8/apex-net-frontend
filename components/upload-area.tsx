@@ -84,10 +84,10 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-lg p-12 text-center transition ${
+        className={`relative glass-card p-12 text-center transition cursor-pointer ${
           isDragActive
-            ? 'border-primary bg-primary/5'
-            : 'border-border bg-secondary/30 hover:border-primary'
+            ? 'ring-2 ring-primary/50 bg-primary/5'
+            : 'hover:bg-white/40'
         }`}
       >
         <input
@@ -141,7 +141,7 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
 
       {progress > 0 && progress < 100 && (
         <div className="mt-4">
-          <div className="w-full bg-secondary rounded-full h-2">
+          <div className="w-full bg-secondary/60 rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
@@ -152,13 +152,13 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
       )}
 
       {error && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mt-4 p-3 bg-red-500/10 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded-xl text-sm">
           {error}
         </div>
       )}
 
       {progress === 100 && !isAnalyzing && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+        <div className="mt-4 p-3 bg-green-500/10 border-l-4 border-green-500 text-green-700 dark:text-green-300 rounded-xl text-sm">
           Upload complete! Analyzing your X-ray...
         </div>
       )}

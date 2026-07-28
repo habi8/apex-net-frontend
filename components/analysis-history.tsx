@@ -60,11 +60,11 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+      <div className="glass-card p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Recent Analyses</h3>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-secondary rounded-lg animate-pulse" />
+            <div key={i} className="h-12 bg-secondary/60 rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -72,9 +72,9 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+    <div className="glass-card p-6">
       <h3 className="text-lg font-semibold text-foreground mb-4">Recent Analyses</h3>
-      
+
       {history.length === 0 ? (
         <p className="text-muted-foreground text-sm">No analyses yet. Upload an X-ray to get started.</p>
       ) : (
@@ -86,11 +86,11 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
             const maxConfidence = Math.max(
               ...record.prediction_data.findings.map(f => f.confidence)
             )
-            
+
             return (
               <Link key={record.id} href={`/history/${record.id}`}>
                 <div
-                  className="p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition cursor-pointer"
+                  className="p-3 bg-secondary/50 hover:bg-secondary/80 backdrop-blur-sm rounded-xl transition cursor-pointer"
                 >
                   <p className="text-sm font-medium text-foreground truncate">
                     {upload?.file_name || 'Unknown file'}
@@ -100,7 +100,7 @@ export function AnalysisHistory({ refreshTrigger = 0 }: AnalysisHistoryProps) {
                       {new Date(record.created_at).toLocaleDateString()}
                     </p>
                     <span className={`text-xs font-bold font-mono-numeric ${
-                      maxConfidence >= 0.5 ? 'text-red-600' : 'text-green-600'
+                      maxConfidence >= 0.5 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
                     }`}>
                       {(maxConfidence * 100).toFixed(0)}%
                     </span>
