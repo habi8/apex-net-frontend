@@ -56,7 +56,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-transparent">
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>

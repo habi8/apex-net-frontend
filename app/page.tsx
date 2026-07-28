@@ -6,9 +6,8 @@ import Link from 'next/link'
 import { ArrowRight, BrainCircuit, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/logo'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { XrayVisualizer } from '@/components/xray-visualizer'
+import { SiteHeader } from '@/components/site-header'
 
 const highlights = [
   {
@@ -45,32 +44,8 @@ export default function LandingPage() {
   }, [router])
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Header - logo top-left, actions top-right, sits above the hero */}
-      <header className="site-header">
-        <div className="site-header-inner">
-          <Link href="/" className="site-logo-link" aria-label="APEX-Net home">
-            <Logo size={120} className="site-logo" />
-          </Link>
-
-          <nav className="site-nav" aria-label="Primary">
-            <ThemeToggle />
-            <Link href="/auth/login">
-              <Button
-                variant="outline"
-                className="hidden h-9 px-3 text-xs sm:inline-flex sm:h-10 sm:px-5 sm:text-sm"
-              >
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth/sign-up">
-              <Button className="h-9 px-4 text-xs font-medium sm:h-10 sm:px-6 sm:text-sm">
-                Get Started
-              </Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="relative min-h-screen bg-transparent">
+      <SiteHeader />
 
       <main>
         <section className="relative overflow-hidden">
@@ -97,7 +72,7 @@ export default function LandingPage() {
                 <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row sm:gap-3 lg:justify-start sm:mt-8">
                   <Link href="/dashboard">
                     <Button className="h-10 w-full px-5 text-sm font-semibold sm:h-11 sm:w-auto sm:px-6 sm:text-sm shadow-lg shadow-primary/20">
-                      Try the platform
+                      Test X-Ray
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
