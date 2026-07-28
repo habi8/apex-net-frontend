@@ -3,10 +3,30 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowRight, BrainCircuit, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Logo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { XrayVisualizer } from '@/components/xray-visualizer'
+
+const highlights = [
+  {
+    title: 'Rapid triage support',
+    description: 'Surface likely findings quickly so teams can focus on the next best step.',
+    icon: Zap,
+  },
+  {
+    title: 'Clinical-grade summaries',
+    description: 'Turn dense imaging outputs into clear, structured findings and recommendations.',
+    icon: BrainCircuit,
+  },
+  {
+    title: 'Secure collaboration',
+    description: 'Keep analysis workflows organized, accessible, and protected for modern teams.',
+    icon: ShieldCheck,
+  },
+]
 
 export default function LandingPage() {
   const router = useRouter()
@@ -15,7 +35,7 @@ export default function LandingPage() {
     async function checkAuth() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (user) {
         router.push('/dashboard')
       }
@@ -25,83 +45,111 @@ export default function LandingPage() {
   }, [router])
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-          <Logo size={240} />
-          
-          <div className="flex items-center gap-3">
+    <div className="relative min-h-screen bg-background">
+      {/* Header - logo top-left, actions top-right, sits above the hero */}
+      <header className="site-header">
+        <div className="site-header-inner">
+          <Link href="/" className="site-logo-link" aria-label="APEX-Net home">
+            <Logo size={120} className="site-logo" />
+          </Link>
+
+          <nav className="site-nav" aria-label="Primary">
             <ThemeToggle />
             <Link href="/auth/login">
-              <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
+              <Button
+                variant="outline"
+                className="hidden h-9 px-3 text-xs sm:inline-flex sm:h-10 sm:px-5 sm:text-sm"
+              >
                 Sign In
               </Button>
             </Link>
             <Link href="/auth/sign-up">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button className="h-9 px-4 text-xs font-medium sm:h-10 sm:px-6 sm:text-sm">
                 Get Started
               </Button>
             </Link>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section className="relative overflow-hidden">
+          <div className="hero-mesh absolute inset-0" />
+          <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+            <div className="grid items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-12">
+              {/* Text column */}
+              <div className="text-center lg:text-left">
+                <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary sm:mb-6 sm:gap-2 sm:px-3 sm:text-sm">
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Clinical-grade AI imaging workflows
+                </div>
+
+                <h1 className="text-3xl font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
+                  See more with{' '}
+                  <span className="text-gradient">precision-first</span> chest X-ray analysis.
+                </h1>
+
+                <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:mt-6 sm:text-lg sm:leading-8 lg:mx-0">
+                  APEX-Net helps medical teams move from imaging intake to actionable insight with faster review,
+                  clearer findings, and confident next-step guidance.
+                </p>
+
+                <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row sm:gap-3 lg:justify-start sm:mt-8">
+                  <Link href="/dashboard">
+                    <Button className="h-10 w-full px-5 text-sm font-semibold sm:h-11 sm:w-auto sm:px-6 sm:text-sm shadow-lg shadow-primary/20">
+                      Try the platform
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/auth/sign-up">
+                    <Button
+                      variant="outline"
+                      className="h-10 w-full px-5 text-sm font-semibold sm:h-11 sm:w-auto sm:px-6 sm:text-sm"
+                    >
+                      Create account
+                    </Button>
+                  </Link>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start sm:mt-8 sm:gap-3">
+                  <span className="pill text-xs sm:text-sm">Realtime insights</span>
+                  <span className="pill text-xs sm:text-sm">Structured findings</span>
+                  <span className="pill text-xs sm:text-sm">Secure workflow</span>
+                </div>
+              </div>
+
+              {/* Right column - animated X-ray visualizer */}
+              <div className="relative w-full">
+                <div className="mx-auto w-full max-w-[420px] sm:max-w-[460px] lg:max-w-[480px]">
+                  <XrayVisualizer />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
+        </section>
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-        <div className="text-center space-y-8">
-          <h2 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight text-balance">
-            AI-Powered Chest X-ray Analysis
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Get rapid, accurate chest X-ray analysis with detailed findings and clinical recommendations.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-medium">
-                Test X-Ray
-              </Button>
-            </Link>
-            <Link href="/auth/sign-up">
-              <Button 
-                variant="outline"
-                className="text-foreground border-border hover:bg-secondary px-8 py-6 text-base font-medium"
-              >
-                Get Started
-              </Button>
-            </Link>
+        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+          <div className="grid gap-3 sm:gap-5 md:grid-cols-3">
+            {highlights.map((item) => {
+              const Icon = item.icon
+              return (
+                <article key={item.title} className="section-card p-4 sm:p-6">
+                  <div className="inline-flex rounded-2xl bg-primary/10 p-2 sm:p-2.5 text-primary">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </div>
+                  <h3 className="mt-3 text-lg font-semibold text-foreground sm:mt-4 sm:text-xl">{item.title}</h3>
+                  <p className="mt-1.5 text-xs leading-6 text-muted-foreground sm:mt-2 sm:text-sm">{item.description}</p>
+                </article>
+              )
+            })}
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* Animated Gradient Section */}
-      <section className="relative overflow-hidden py-32 border-y border-border">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 animate-pulse" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent" style={{
-          animation: 'gradient-shift 8s ease-in-out infinite'
-        }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h3 className="text-4xl font-bold text-foreground">Advanced AI Technology</h3>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Powered by state-of-the-art deep learning models for accurate medical imaging analysis
-          </p>
-        </div>
-        <style jsx>{`
-          @keyframes gradient-shift {
-            0%, 100% {
-              opacity: 0.5;
-            }
-            50% {
-              opacity: 1;
-            }
-          }
-        `}</style>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-card border-t border-border py-8 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground text-sm">
-          <p>&copy; 2024 APEX-Net. All rights reserved.</p>
+      <footer className="border-t border-border/70 bg-card/70 py-6 sm:py-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 text-center text-xs text-muted-foreground sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 sm:text-sm">
+          <p>&copy; 2024 APEX-Net. Built for modern, precision-led imaging workflows.</p>
+          <p>Secure, thoughtful, and clinically aligned.</p>
         </div>
       </footer>
     </div>
