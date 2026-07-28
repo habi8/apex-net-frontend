@@ -2,11 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/logo'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { AppHeader } from '@/components/app-header'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -23,12 +20,12 @@ export default function ProfilePage() {
     async function checkAuth() {
       const supabase = createClient()
       const { data: { user }, error } = await supabase.auth.getUser()
-      
+
       if (error || !user) {
         router.push('/auth/login')
         return
       }
-      
+
       setUser(user)
       setEmail(user.email || '')
       setFullName(user.user_metadata?.full_name || '')
@@ -43,8 +40,7 @@ export default function ProfilePage() {
 
     try {
       const supabase = createClient()
-      
-      // Update user metadata
+
       const { error } = await supabase.auth.updateUser({
         data: { full_name: fullName }
       })
@@ -55,7 +51,6 @@ export default function ProfilePage() {
         return
       }
 
-      // Update local user state
       setUser({
         ...user,
         user_metadata: { ...user.user_metadata, full_name: fullName }
@@ -81,18 +76,15 @@ export default function ProfilePage() {
 
     try {
       const supabase = createClient()
-      
-      // Delete user from auth
+
       const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id)
-      
+
       if (deleteError) {
-        // Fallback: try to sign out and let backend handle deletion
         await supabase.auth.signOut()
         router.push('/auth/login')
         return
       }
 
-      // Sign out after deletion
       await supabase.auth.signOut()
       router.push('/')
     } catch (err) {
@@ -107,35 +99,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition">
-            <Logo size={156} />
-            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link href="/history">
-              <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
-                History
-              </Button>
-            </Link>
-            <Button
-              onClick={async () => {
-                const supabase = createClient()
-                await supabase.auth.signOut()
-                router.push('/auth/login')
-              }}
-              className="bg-destructive hover:bg-destructive/90 text-primary-foreground"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-transparent">
+      <AppHeader
+        user={user}
+        links={[
+          { href: '/dashboard', label: 'Dashboard' },
+          { href: '/history', label: 'History' },
+          { href: '/profile', label: 'Profile', active: true },
+        ]}
+      />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -146,10 +118,10 @@ export default function ProfilePage() {
         {/* Messages */}
         {message && (
           <div
-            className={`mb-6 p-4 rounded-lg border ${
+            className={`mb-6 p-4 rounded-xl border backdrop-blur-xl ${
               message.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-700'
-                : 'bg-red-50 border-red-200 text-red-700'
+                ? 'bg-green-50/80 border-green-300/60 text-green-700'
+                : 'bg-red-50/80 border-red-300/60 text-red-700'
             }`}
           >
             {message.text}
@@ -157,11 +129,10 @@ export default function ProfilePage() {
         )}
 
         {/* Profile Section */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h3 className="text-xl font-semibold text-foreground mb-6">Account Information</h3>
 
           <div className="space-y-6">
-            {/* Full Name */}
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-foreground mb-2">
                 Full Name
@@ -172,7 +143,7 @@ export default function ProfilePage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="glass-input"
                   placeholder="Enter your full name"
                 />
               ) : (
@@ -180,7 +151,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Email (Read-only) */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                 Email Address
@@ -189,88 +159,82 @@ export default function ProfilePage() {
               <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
             </div>
 
-            {/* Edit/Save Buttons */}
             <div className="flex gap-3 pt-4">
               {isEditing ? (
                 <>
-                  <Button
+                  <button
                     onClick={handleSaveProfile}
                     disabled={isSaving}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="glass-button-primary h-11 px-5 rounded-xl text-sm font-semibold disabled:pointer-events-none disabled:opacity-50"
                   >
                     {isSaving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setIsEditing(false)
                       setFullName(user.user_metadata?.full_name || '')
                     }}
-                    variant="outline"
-                    className="text-foreground border-border hover:bg-secondary"
+                    className="glass-button h-11 px-5 rounded-xl text-sm font-semibold"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </>
               ) : (
-                <Button
+                <button
                   onClick={() => setIsEditing(true)}
-                  variant="outline"
-                  className="text-foreground border-border hover:bg-secondary"
+                  className="glass-button h-11 px-5 rounded-xl text-sm font-semibold"
                 >
                   Edit Profile
-                </Button>
+                </button>
               )}
             </div>
           </div>
         </div>
 
         {/* Danger Zone */}
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-xl font-semibold text-red-900 mb-4">Danger Zone</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <p className="text-red-900 mb-3">
-                Deleting your account will permanently remove all your data including upload history and analyses. This action cannot be undone.
-              </p>
-            </div>
+        <div className="glass-card-danger glass-card p-6">
+          <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-4">Danger Zone</h3>
 
-            {deleteConfirm === '' && !deleteConfirm && (
-              <Button
+          <div className="space-y-4">
+            <p className="text-foreground/80">
+              Deleting your account will permanently remove all your data including upload history and analyses. This action cannot be undone.
+            </p>
+
+            {deleteConfirm === '' && (
+              <button
                 onClick={() => setDeleteConfirm('confirm')}
-                className="bg-red-600 hover:bg-red-700 text-white"
+                className="glass-button-danger glass-button h-11 px-5 rounded-xl text-sm font-semibold"
               >
                 Delete Account
-              </Button>
+              </button>
             )}
 
             {deleteConfirm === 'confirm' && (
-              <div className="space-y-3 p-4 bg-white border border-red-200 rounded-lg">
-                <p className="text-red-900 font-medium">
-                  Type <span className="font-bold">DELETE</span> to confirm account deletion:
+              <div className="space-y-3 p-4 bg-white/60 border border-red-300/50 rounded-xl backdrop-blur-sm">
+                <p className="text-foreground font-medium">
+                  Type <span className="font-bold text-red-700">DELETE</span> to confirm account deletion:
                 </p>
                 <input
                   type="text"
-                  value={deleteConfirm === 'confirm' ? '' : deleteConfirm}
+                  value=""
                   onChange={(e) => setDeleteConfirm(e.target.value)}
                   placeholder="Type DELETE"
-                  className="w-full px-4 py-2 border border-red-200 rounded-lg bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="glass-input glass-input-danger"
                 />
                 <div className="flex gap-3">
-                  <Button
+                  <button
                     onClick={handleDeleteAccount}
                     disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="glass-button-danger glass-button h-11 px-5 rounded-xl text-sm font-semibold disabled:pointer-events-none disabled:opacity-50"
                   >
                     {isDeleting ? 'Deleting...' : 'Confirm Delete'}
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => setDeleteConfirm('')}
-                    variant="outline"
-                    className="text-foreground border-border hover:bg-secondary"
+                    className="glass-button h-11 px-5 rounded-xl text-sm font-semibold"
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}

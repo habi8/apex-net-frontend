@@ -55,8 +55,9 @@ export function ThemeToggle() {
     return (
       <button
         type="button"
+        data-theme-toggle=""
         aria-label="Toggle theme"
-        className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-sm transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="inline-flex shrink-0 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         suppressHydrationWarning
       >
         <Moon className="size-5" aria-hidden="true" />
@@ -67,10 +68,11 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
+      data-theme-toggle=""
       onClick={toggleTheme}
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-foreground shadow-sm transition hover:bg-secondary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="inline-flex shrink-0 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
       {isDark ? (
         <Sun className="size-5" aria-hidden="true" />

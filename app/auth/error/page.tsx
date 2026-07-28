@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 
 export default function AuthErrorPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -20,9 +19,9 @@ export default function AuthErrorPage() {
           <p className="text-muted-foreground">AI-Powered Chest X-ray Analysis</p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 shadow-sm text-center">
+        <div className="glass-card p-8 text-center">
           <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full mb-4">
               <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -35,14 +34,14 @@ export default function AuthErrorPage() {
 
           <div className="space-y-3">
             <Link href="/auth/login" className="block">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 rounded-lg transition">
+              <button className="glass-button-primary w-full h-11 rounded-xl text-sm font-semibold">
                 Try Again
-              </Button>
+              </button>
             </Link>
             <Link href="/auth/sign-up" className="block">
-              <Button variant="outline" className="w-full text-foreground border-border hover:bg-secondary rounded-lg transition">
+              <button className="glass-button w-full h-11 rounded-xl text-sm font-semibold">
                 Create New Account
-              </Button>
+              </button>
             </Link>
           </div>
         </div>

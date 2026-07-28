@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/logo'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { AppHeader } from '@/components/app-header'
 
 interface HistoryItem {
   id: string
@@ -31,15 +29,14 @@ export default function HistoryPage() {
     async function checkAuthAndLoadHistory() {
       const supabase = createClient()
       const { data: { user }, error } = await supabase.auth.getUser()
-      
+
       if (error || !user) {
         router.push('/auth/login')
         return
       }
-      
+
       setUser(user)
 
-      // Fetch user's predictions with upload info
       const { data: predictions, error: fetchError } = await supabase
         .from('predictions')
         .select(`
@@ -57,7 +54,6 @@ export default function HistoryPage() {
         return
       }
 
-      // Transform data
       const formattedHistory = predictions.map((pred: any) => ({
         id: pred.id,
         created_at: pred.created_at,
@@ -77,35 +73,15 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition">
-            <Logo size={156} />
-            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link href="/profile">
-              <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
-                Profile
-              </Button>
-            </Link>
-            <Button
-              onClick={async () => {
-                const supabase = createClient()
-                await supabase.auth.signOut()
-                router.push('/auth/login')
-              }}
-              className="bg-destructive hover:bg-destructive/90 text-primary-foreground"
-            >
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-transparent">
+      <AppHeader
+        user={user}
+        links={[
+          { href: '/dashboard', label: 'Dashboard' },
+          { href: '/history', label: 'History', active: true },
+          { href: '/profile', label: 'Profile' },
+        ]}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -114,41 +90,39 @@ export default function HistoryPage() {
         </div>
 
         {/* Sort Controls */}
-        <div className="mb-6 flex gap-3">
-          <Button
+        <div className="mb-6 flex gap-2 sm:gap-3">
+          <button
             onClick={() => setSortBy('newest')}
-            variant={sortBy === 'newest' ? 'default' : 'outline'}
-            className={sortBy === 'newest' ? 'bg-primary' : 'text-foreground border-border'}
+            className={`glass-button ${sortBy === 'newest' ? 'is-active' : ''}`}
           >
             Newest First
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setSortBy('oldest')}
-            variant={sortBy === 'oldest' ? 'default' : 'outline'}
-            className={sortBy === 'oldest' ? 'bg-primary' : 'text-foreground border-border'}
+            className={`glass-button ${sortBy === 'oldest' ? 'is-active' : ''}`}
           >
             Oldest First
-          </Button>
+          </button>
         </div>
 
         {/* History Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-6 animate-pulse">
-                <div className="h-40 bg-secondary rounded-lg mb-4" />
-                <div className="h-4 bg-secondary rounded mb-2" />
-                <div className="h-4 bg-secondary rounded w-2/3" />
+              <div key={i} className="glass-card p-6 animate-pulse">
+                <div className="h-40 bg-secondary/60 rounded-lg mb-4" />
+                <div className="h-4 bg-secondary/60 rounded mb-2" />
+                <div className="h-4 bg-secondary/60 rounded w-2/3" />
               </div>
             ))}
           </div>
         ) : history.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="glass-card text-center py-12 px-6">
             <p className="text-muted-foreground mb-4">No analyses yet</p>
             <Link href="/dashboard">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <button className="glass-button-primary h-11 px-6 rounded-xl text-sm font-semibold">
                 Upload Your First X-ray
-              </Button>
+              </button>
             </Link>
           </div>
         ) : (
@@ -160,7 +134,7 @@ export default function HistoryPage() {
 
               return (
                 <Link key={item.id} href={`/history/${item.id}`}>
-                  <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer h-full">
+                  <div className="glass-card overflow-hidden hover:scale-[1.02] hover:-translate-y-0.5 transition-all cursor-pointer h-full">
                     {/* Placeholder Thumbnail */}
                     <div className="h-40 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                       <svg

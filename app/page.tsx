@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, BrainCircuit, ShieldCheck, Sparkles, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 import { XrayVisualizer } from '@/components/xray-visualizer'
 import { SiteHeader } from '@/components/site-header'
 
@@ -71,18 +70,15 @@ export default function LandingPage() {
 
                 <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row sm:gap-3 lg:justify-start sm:mt-8">
                   <Link href="/dashboard">
-                    <Button className="h-10 w-full px-5 text-sm font-semibold sm:h-11 sm:w-auto sm:px-6 sm:text-sm shadow-lg shadow-primary/20">
+                    <button className="glass-button-primary inline-flex items-center justify-center h-11 px-6 rounded-xl text-sm font-semibold w-full sm:w-auto">
                       Test X-Ray
                       <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    </button>
                   </Link>
                   <Link href="/auth/sign-up">
-                    <Button
-                      variant="outline"
-                      className="h-10 w-full px-5 text-sm font-semibold sm:h-11 sm:w-auto sm:px-6 sm:text-sm"
-                    >
+                    <button className="glass-button h-11 px-6 rounded-xl text-sm font-semibold w-full sm:w-auto">
                       Create account
-                    </Button>
+                    </button>
                   </Link>
                 </div>
 

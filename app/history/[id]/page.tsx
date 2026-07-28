@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Logo } from '@/components/logo'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { AppHeader } from '@/components/app-header'
 
 interface Finding {
   label: string
@@ -32,7 +30,7 @@ export default function ResultDetailPage() {
   const router = useRouter()
   const params = useParams()
   const resultId = params.id as string
-  
+
   const [user, setUser] = useState<any>(null)
   const [result, setResult] = useState<ResultDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -41,15 +39,14 @@ export default function ResultDetailPage() {
     async function checkAuthAndLoadResult() {
       const supabase = createClient()
       const { data: { user }, error } = await supabase.auth.getUser()
-      
+
       if (error || !user) {
         router.push('/auth/login')
         return
       }
-      
+
       setUser(user)
 
-      // Fetch specific prediction
       const { data: predictions, error: fetchError } = await supabase
         .from('predictions')
         .select(`
@@ -87,20 +84,19 @@ export default function ResultDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition">
-              <Logo size={156} />
-              <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-            </Link>
-            <ThemeToggle />
-          </div>
-        </nav>
+      <div className="min-h-screen bg-transparent">
+        <AppHeader
+          user={user}
+          links={[
+            { href: '/dashboard', label: 'Dashboard' },
+            { href: '/history', label: 'History', active: true },
+            { href: '/profile', label: 'Profile' },
+          ]}
+        />
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-secondary rounded-lg animate-pulse" />
+              <div key={i} className="h-20 glass-card animate-pulse" />
             ))}
           </div>
         </div>
@@ -110,40 +106,39 @@ export default function ResultDetailPage() {
 
   if (!result) {
     return (
-      <div className="min-h-screen bg-background">
-        <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition">
-              <Logo size={156} />
-              <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-            </Link>
-            <ThemeToggle />
-          </div>
-        </nav>
+      <div className="min-h-screen bg-transparent">
+        <AppHeader
+          user={user}
+          links={[
+            { href: '/dashboard', label: 'Dashboard' },
+            { href: '/history', label: 'History', active: true },
+            { href: '/profile', label: 'Profile' },
+          ]}
+        />
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
           <p className="text-muted-foreground mb-4">Result not found</p>
           <Link href="/history">
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <button className="glass-button-primary h-11 px-6 rounded-xl text-sm font-semibold">
               Back to History
-            </Button>
+            </button>
           </Link>
         </div>
       </div>
     )
   }
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityStyle = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'severe':
-        return 'bg-red-50 border-red-200 text-red-900'
+        return 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300'
       case 'moderate':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-900'
+        return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-700 dark:text-yellow-300'
       case 'mild':
-        return 'bg-blue-50 border-blue-200 text-blue-900'
+        return 'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300'
       case 'minimal':
-        return 'bg-green-50 border-green-200 text-green-900'
+        return 'bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300'
       default:
-        return 'bg-gray-50 border-gray-200 text-gray-900'
+        return 'bg-secondary/50 border-border text-foreground'
     }
   }
 
@@ -154,28 +149,26 @@ export default function ResultDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b glass-nav shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition">
-            <Logo size={156} />
-            <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </nav>
+    <div className="min-h-screen bg-transparent">
+      <AppHeader
+        user={user}
+        links={[
+          { href: '/dashboard', label: 'Dashboard' },
+          { href: '/history', label: 'History', active: true },
+          { href: '/profile', label: 'Profile' },
+        ]}
+      />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link href="/history" className="mb-6">
-          <Button variant="outline" className="text-foreground border-border hover:bg-secondary">
+        <Link href="/history" className="mb-6 inline-block">
+          <button className="glass-button h-11 px-5 rounded-xl text-sm font-semibold">
             ← Back to History
-          </Button>
+          </button>
         </Link>
 
         {/* Header */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h1 className="text-3xl font-bold text-foreground mb-2">{result.file_name}</h1>
           <p className="text-muted-foreground">
             Analyzed on {new Date(result.created_at).toLocaleString()}
@@ -186,9 +179,9 @@ export default function ResultDetailPage() {
         </div>
 
         {/* X-ray Image Placeholder */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">X-ray Image</h2>
-          <div className="h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+          <div className="h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
             <svg
               className="w-32 h-32 text-primary/50"
               fill="none"
@@ -206,7 +199,7 @@ export default function ResultDetailPage() {
         </div>
 
         {/* Overall Assessment */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Overall Assessment</h2>
           <p className="text-foreground leading-relaxed">
             {result.prediction_data.overall_assessment}
@@ -214,7 +207,7 @@ export default function ResultDetailPage() {
         </div>
 
         {/* All Disease Probabilities */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Disease Probabilities</h2>
           <div className="space-y-4">
             {result.prediction_data.findings.map((finding, idx) => (
@@ -225,9 +218,9 @@ export default function ResultDetailPage() {
                     {(finding.confidence * 100).toFixed(1)}%
                   </span>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-2">
+                <div className="w-full bg-secondary/60 rounded-full h-2 overflow-hidden">
                   <div
-                    className={`h-2 rounded-full ${getConfidenceBarColor(finding.confidence)}`}
+                    className={`h-2 rounded-full ${getConfidenceBarColor(finding.confidence)} transition-all duration-500`}
                     style={{ width: `${finding.confidence * 100}%` }}
                   />
                 </div>
@@ -237,13 +230,13 @@ export default function ResultDetailPage() {
         </div>
 
         {/* Detailed Findings */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm mb-6">
+        <div className="glass-card p-6 mb-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Detailed Findings</h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {result.prediction_data.findings.map((finding, idx) => (
               <div
                 key={idx}
-                className={`border-l-4 rounded-lg p-4 ${getSeverityColor(finding.severity)}`}
+                className={`border-l-4 rounded-xl p-4 backdrop-blur-sm ${getSeverityStyle(finding.severity)}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -265,7 +258,7 @@ export default function ResultDetailPage() {
         </div>
 
         {/* Recommendations */}
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+        <div className="glass-card p-6">
           <h2 className="text-xl font-semibold text-foreground mb-4">Clinical Recommendations</h2>
           <ul className="space-y-2">
             {result.prediction_data.recommendations.map((rec, idx) => (

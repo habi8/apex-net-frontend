@@ -50,8 +50,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent">
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4">
+      <div className="absolute top-4 right-4 z-50">
         <ThemeToggle />
       </div>
       <div className="w-full max-w-md">
@@ -64,7 +64,7 @@ export default function LoginPage() {
           <p className="text-muted-foreground text-sm">Sign in to your account</p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 shadow-sm">
+        <div className="glass-card p-8">
           <h2 className="text-xl font-semibold text-foreground mb-6">Sign In</h2>
 
           <form onSubmit={handleLogin} className="space-y-4">
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full px-4 py-2 border border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="glass-input"
                 required
               />
             </div>
@@ -93,13 +93,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 border border-border rounded-lg bg-input text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="glass-input"
                 required
               />
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <div className="p-3 bg-red-50/80 border border-red-300/60 text-red-700 rounded-lg text-sm backdrop-blur-sm">
                 {error}
               </div>
             )}
@@ -107,7 +107,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+              className="glass-button-primary w-full h-11 rounded-xl text-sm font-semibold transition disabled:pointer-events-none disabled:opacity-50"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>

@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 
 export default function SignUpSuccessPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-transparent px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -20,9 +19,9 @@ export default function SignUpSuccessPage() {
           <p className="text-muted-foreground">AI-Powered Chest X-ray Analysis</p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-8 shadow-sm text-center">
+        <div className="glass-card p-8 text-center">
           <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 border border-primary/30 rounded-full mb-4">
               <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -34,9 +33,9 @@ export default function SignUpSuccessPage() {
           </div>
 
           <Link href="/auth/login">
-            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 rounded-lg transition">
+            <button className="glass-button-primary w-full h-11 rounded-xl text-sm font-semibold">
               Back to Sign In
-            </Button>
+            </button>
           </Link>
         </div>
       </div>

@@ -185,9 +185,9 @@ input[type='reset'] {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     background-image:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 22%, transparent), transparent 38%),
-      radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 14%, transparent), transparent 42%),
-      linear-gradient(135deg, color-mix(in srgb, var(--background) 92%, white 8%), color-mix(in srgb, var(--background) 96%, var(--primary) 4%));
+      radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 16%, transparent), transparent 45%),
+      radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 50%),
+      linear-gradient(180deg, color-mix(in srgb, var(--background) 88%, white 12%) 0%, var(--background) 35%, var(--background) 100%);
     background-attachment: fixed;
   }
 
@@ -229,9 +229,9 @@ input[type='reset'] {
   }
 
   .hero-mesh {
-    background-image: radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 18%, transparent), transparent 28%),
-      radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 18%, transparent), transparent 30%);
-    opacity: 0.95;
+    background-image: radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 40%),
+      radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%);
+    opacity: 1;
   }
 
   .text-gradient {
@@ -286,7 +286,7 @@ input[type='reset'] {
     }
   }
 
-  .site-header-pill {
+.site-header-pill {
     pointer-events: auto;
     display: flex;
     align-items: center;
@@ -297,17 +297,17 @@ input[type='reset'] {
     margin: 0 auto;
     padding: 0.5rem 0.75rem;
 
-    /* Glass effect */
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    /* Glass effect - tinted to match page background tone */
+    background: rgba(244, 248, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
 
     /* Soft shadow */
     box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.6) inset,
-      0 8px 32px -8px rgba(15, 23, 37, 0.18),
-      0 2px 8px -2px rgba(15, 23, 37, 0.08);
+      0 1px 0 0 rgba(255, 255, 255, 0.7) inset,
+      0 8px 32px -8px rgba(15, 23, 37, 0.12),
+      0 2px 8px -2px rgba(15, 23, 37, 0.06);
 
     border-radius: 1rem;
     transition: box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
@@ -315,7 +315,7 @@ input[type='reset'] {
 
   :root[data-theme='dark'] .site-header-pill,
   .dark .site-header-pill {
-    background: rgba(15, 23, 37, 0.55);
+    background: rgba(15, 23, 37, 0.6);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow:
       0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
@@ -489,40 +489,300 @@ input[type='reset'] {
       0 2px 8px -2px rgba(0, 102, 255, 0.5);
   }
 
-  /* ThemeToggle inside the pill needs a tighter footprint */
-  .site-nav > button {
-    height: 2.1rem;
-    width: 2.1rem;
+  /* ThemeToggle button — base style + variants for the pill and standalone use */
+  [data-theme-toggle] {
+    display: inline-flex;
+    height: 2.4rem;
+    width: 2.4rem;
+    align-items: center;
+    justify-content: center;
     border-radius: 0.75rem;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.55);
     border: 1px solid rgba(15, 23, 37, 0.12);
     color: var(--foreground);
-    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
   }
 
-  :root[data-theme='dark'] .site-nav > button,
-  .dark .site-nav > button {
+  :root[data-theme='dark'] [data-theme-toggle],
+  .dark [data-theme-toggle] {
     border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(15, 23, 37, 0.55);
     color: #f5f7fa;
   }
 
-  .site-nav > button:hover {
-    background: rgba(15, 23, 37, 0.05);
-    border-color: rgba(15, 23, 37, 0.2);
+  [data-theme-toggle]:hover {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(15, 23, 37, 0.22);
   }
 
-  :root[data-theme='dark'] .site-nav > button:hover,
-  .dark .site-nav > button:hover {
-    background: rgba(255, 255, 255, 0.06);
+  :root[data-theme='dark'] [data-theme-toggle]:hover,
+  .dark [data-theme-toggle]:hover {
+    background: rgba(15, 23, 37, 0.75);
     border-color: rgba(255, 255, 255, 0.24);
   }
 
-  @media (min-width: 640px) {
-    .site-nav > button {
-      height: 2.4rem;
-      width: 2.4rem;
-      border-radius: 0.875rem;
+  /* App header (authenticated pages - dashboard/profile/history) */
+  .app-header-pill {
+    gap: 0.5rem;
+  }
+
+  .app-header-links {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 768px) {
+    .app-header-links {
+      display: flex;
     }
+  }
+
+  .app-header-greeting {
+    display: none;
+    flex-direction: column;
+    line-height: 1.15;
+    text-align: right;
+    padding-right: 0.6rem;
+    margin-right: 0.1rem;
+    border-right: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  }
+
+  @media (min-width: 1024px) {
+    .app-header-greeting {
+      display: flex;
+    }
+  }
+
+  .app-header-greeting-label {
+    font-size: 0.65rem;
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .app-header-greeting-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  /* Glass card - reusable for any elevated content surface */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(15, 23, 37, 0.1);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+      0 12px 36px -16px rgba(15, 23, 37, 0.18),
+      0 4px 12px -4px rgba(15, 23, 37, 0.08);
+  }
+
+  :root[data-theme='dark'] .glass-card,
+  .dark .glass-card {
+    background: rgba(15, 23, 37, 0.55);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+      0 12px 36px -16px rgba(0, 0, 0, 0.5),
+      0 4px 12px -4px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Glass card with danger coloring (profile delete zone) */
+  .glass-card-danger {
+    background: color-mix(in srgb, #ef4444 6%, rgba(255, 255, 255, 0.75));
+    border-color: rgba(239, 68, 68, 0.35);
+  }
+
+  :root[data-theme='dark'] .glass-card-danger,
+  .dark .glass-card-danger {
+    background: color-mix(in srgb, #ef4444 12%, rgba(15, 23, 37, 0.6));
+    border-color: rgba(239, 68, 68, 0.45);
+  }
+
+  /* Glass input - visible borders + glassmorphic fill */
+  .glass-input {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.875rem;
+    color: var(--foreground);
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(15, 23, 37, 0.15);
+    border-radius: 0.625rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    box-shadow:
+      0 1px 2px 0 rgba(15, 23, 37, 0.04) inset;
+  }
+
+  .glass-input::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .glass-input:hover {
+    border-color: rgba(15, 23, 37, 0.25);
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .glass-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 1px 2px 0 rgba(15, 23, 37, 0.04) inset,
+      0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+  }
+
+  :root[data-theme='dark'] .glass-input,
+  .dark .glass-input {
+    background: rgba(15, 23, 37, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f5f7fa;
+  }
+
+  :root[data-theme='dark'] .glass-input:hover,
+  .dark .glass-input:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(15, 23, 37, 0.6);
+  }
+
+  :root[data-theme='dark'] .glass-input:focus,
+  .dark .glass-input:focus {
+    background: rgba(15, 23, 37, 0.7);
+    border-color: var(--primary);
+  }
+
+  /* Glass input danger variant */
+  .glass-input-danger {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(254, 242, 242, 0.5);
+  }
+
+  .glass-input-danger:hover {
+    border-color: rgba(239, 68, 68, 0.55);
+    background: rgba(254, 242, 242, 0.65);
+  }
+
+  .glass-input-danger:focus {
+    border-color: #dc2626;
+    background: rgba(254, 242, 242, 0.75);
+    box-shadow:
+      0 1px 2px 0 rgba(15, 23, 37, 0.04) inset,
+      0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+
+  /* Glass button - bordered button style for nav links */
+  .glass-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 2.25rem;
+    padding: 0 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--foreground);
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(15, 23, 37, 0.12);
+    border-radius: 0.75rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(15, 23, 37, 0.2);
+    transform: translateY(-1px);
+  }
+
+  .glass-button.is-active {
+    background: color-mix(in srgb, var(--primary) 12%, rgba(255, 255, 255, 0.5));
+    border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+    color: var(--primary);
+  }
+
+  .glass-button.is-active:hover {
+    background: color-mix(in srgb, var(--primary) 18%, rgba(255, 255, 255, 0.6));
+  }
+
+  :root[data-theme='dark'] .glass-button,
+  .dark .glass-button {
+    background: rgba(15, 23, 37, 0.45);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f5f7fa;
+  }
+
+  :root[data-theme='dark'] .glass-button:hover,
+  .dark .glass-button:hover {
+    background: rgba(15, 23, 37, 0.65);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  :root[data-theme='dark'] .glass-button.is-active,
+  .dark .glass-button.is-active {
+    background: color-mix(in srgb, var(--primary) 20%, rgba(15, 23, 37, 0.5));
+    border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    color: #60a5fa;
+  }
+
+  /* Sign Out - danger-tinted glass button */
+  .glass-button-danger {
+    background: rgba(254, 226, 226, 0.55);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  .glass-button-danger:hover {
+    background: rgba(254, 202, 202, 0.75);
+    border-color: rgba(220, 38, 38, 0.6);
+    color: #991b1b;
+    box-shadow: 0 4px 14px -4px rgba(220, 38, 38, 0.35);
+  }
+
+  :root[data-theme='dark'] .glass-button-danger,
+  .dark .glass-button-danger {
+    background: rgba(127, 29, 29, 0.35);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #fca5a5;
+  }
+
+  :root[data-theme='dark'] .glass-button-danger:hover,
+  .dark .glass-button-danger:hover {
+    background: rgba(153, 27, 27, 0.5);
+    border-color: rgba(239, 68, 68, 0.65);
+    color: #fee2e2;
+    box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.4);
+  }
+
+  /* Gradient primary button - for important CTAs */
+  .glass-button-primary {
+    background: linear-gradient(135deg, #0066ff 0%, #4f46e5 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.25) inset,
+      0 4px 14px -4px rgba(0, 102, 255, 0.55);
+  }
+
+  .glass-button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
+      0 8px 22px -6px rgba(0, 102, 255, 0.65);
   }
 
   /* X-ray visualizer */
