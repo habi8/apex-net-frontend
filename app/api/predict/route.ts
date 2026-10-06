@@ -44,6 +44,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    let parsedBackendUrl: URL
+    try {
+      parsedBackendUrl = new URL(backendUrl)
+    } catch (error) {
+      console.error('APEX_BACKEND_URL must be an absolute HTTP(S) URL:', error)
+      return NextResponse.json(
+        { error: 'APEX_BACKEND_URL must be set to the full backend URL, including https://.' },
+        { status: 500 },
+      )
+    }
+    if (
+      (parsedBackendUrl.protocol !== 'https:' && parsedBackendUrl.protocol !== 'http:') ||
+      parsedBackendUrl.search ||
+      parsedBackendUrl.hash
+    ) {
+      console.error('APEX_BACKEND_URL must be an absolute HTTP(S) URL without query or fragment')
+      return NextResponse.json(
+        { error: 'APEX_BACKEND_URL must be set to the full backend URL, including https://.' },
+        { status: 500 },
+      )
+    }
+
+    const backendBaseUrl = parsedBackendUrl.toString().replace(/\/+$/, '')
     const backendForm = new FormData()
     backendForm.append('file', image, image.name)
     backendForm.append('heatmap_count', '3')
@@ -55,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     let backendResponse: Response
     try {
-      backendResponse = await fetch(`${backendUrl}/predict`, {
+      backendResponse = await fetch(`${backendBaseUrl}/predict`, {
         method: 'POST',
         headers,
         body: backendForm,
