@@ -66,10 +66,11 @@ export default function ResultDetailPage() {
         return
       }
 
+      const upload = predictions.xray_uploads?.[0]
       setResult({
         id: predictions.id,
         created_at: predictions.created_at,
-        file_name: predictions.xray_uploads?.file_name || 'Unknown file',
+        file_name: upload?.file_name || 'Unknown file',
         prediction_data: predictions.prediction_data,
       })
       setIsLoading(false)

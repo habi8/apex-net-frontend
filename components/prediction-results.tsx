@@ -1,118 +1,122 @@
 'use client'
 
+import { useState } from 'react'
+
 interface Finding {
   label: string
   confidence: number
-  severity: string
-  location: string
 }
 
 interface PredictionResultsProps {
   prediction: {
     findings: Finding[]
+    heatmaps?: Record<string, string>
+    heatmap_method?: string
     overall_assessment: string
-    recommendations: string[]
     analysis_date: string
     model_version: string
   }
 }
 
-function getSeverityColor(severity: string): string {
-  switch (severity.toLowerCase()) {
-    case 'severe':
-      return 'bg-red-500/10 border-l-4 border-red-500/70 text-red-800 dark:text-red-200'
-    case 'moderate':
-      return 'bg-yellow-500/10 border-l-4 border-yellow-500/70 text-yellow-800 dark:text-yellow-200'
-    case 'mild':
-      return 'bg-blue-500/10 border-l-4 border-blue-500/70 text-blue-800 dark:text-blue-200'
-    case 'minimal':
-      return 'bg-green-500/10 border-l-4 border-green-500/70 text-green-800 dark:text-green-200'
-    default:
-      return 'bg-secondary/50 border-l-4 border-border text-foreground'
-  }
-}
-
-function getConfidenceColor(confidence: number): string {
-  if (confidence >= 0.7) return 'text-red-600'
-  if (confidence >= 0.5) return 'text-yellow-600'
-  return 'text-green-600'
-}
-
 export function PredictionResults({ prediction }: PredictionResultsProps) {
+  const heatmapLabels = Object.keys(prediction.heatmaps ?? {})
+  const [selectedLabel, setSelectedLabel] = useState(heatmapLabels[0] ?? '')
+  const availableLabel = heatmapLabels.includes(selectedLabel)
+    ? selectedLabel
+    : (heatmapLabels[0] ?? '')
+
   return (
     <div className="space-y-6">
-      {/* Findings */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Key Findings</h3>
+      {availableLabel && prediction.heatmaps && (
+        <section className="glass-card p-6">
+          <h3 className="mb-2 text-lg font-semibold text-foreground">
+            Attention heatmap: {availableLabel}
+          </h3>
+          <p className="mb-4 text-sm text-muted-foreground">
+            {prediction.heatmap_method}
+          </p>
+          <div className="overflow-hidden rounded-xl bg-black">
+            <img
+              src={prediction.heatmaps[availableLabel]}
+              alt={`Lung-constrained model attention overlay for ${availableLabel}`}
+              className="mx-auto max-h-[640px] w-full object-contain"
+            />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {heatmapLabels.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setSelectedLabel(label)}
+                aria-pressed={availableLabel === label}
+                className={`rounded-lg border px-3 py-2 text-sm ${
+                  availableLabel === label
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            This is a model-attention visualization constrained to the predicted lung
+            mask. It is not a confirmed disease location, lesion boundary, or medical
+            diagnosis.
+          </p>
+        </section>
+      )}
+
+      <section className="glass-card p-6">
+        <h3 className="mb-4 text-lg font-semibold text-foreground">APEX-Net model scores</h3>
         <div className="space-y-3">
-          {prediction.findings.map((finding, idx) => (
-            <div key={idx} className={`rounded-xl p-4 backdrop-blur-sm ${getSeverityColor(finding.severity)}`}>
-              <div className="flex items-start justify-between mb-2">
-                <h4 className="font-semibold">{finding.label}</h4>
-                <span className={`text-sm font-bold font-mono-numeric ${getConfidenceColor(finding.confidence)}`}>
+          {prediction.findings.map((finding) => (
+            <div key={finding.label}>
+              <div className="mb-1 flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  disabled={!heatmapLabels.includes(finding.label)}
+                  onClick={() => setSelectedLabel(finding.label)}
+                  className="text-left text-sm font-medium text-foreground enabled:hover:text-primary disabled:cursor-default"
+                >
+                  {finding.label}
+                </button>
+                <span className="font-mono-numeric text-sm font-semibold text-primary">
                   {(finding.confidence * 100).toFixed(1)}%
                 </span>
               </div>
-              <div className="text-sm space-y-1">
-                <p>
-                  <span className="font-medium">Severity:</span>{' '}
-                  <span className="capitalize">{finding.severity}</span>
-                </p>
-                <p>
-                  <span className="font-medium">Location:</span> {finding.location}
-                </p>
-              </div>
-              <div className="mt-3 bg-black/10 rounded-full h-2 w-full">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/60">
                 <div
-                  className="bg-primary h-2 rounded-full"
-                  style={{ width: `${finding.confidence * 100}%` }}
+                  className="h-2 rounded-full bg-primary transition-all"
+                  style={{ width: `${Math.max(0, Math.min(100, finding.confidence * 100))}%` }}
                 />
               </div>
             </div>
           ))}
         </div>
-      </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Scores are sigmoid model outputs and are not calibrated diagnostic
+          probabilities or estimates of disease severity.
+        </p>
+      </section>
 
-      {/* Overall Assessment */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-3">Overall Assessment</h3>
-        <p className="text-foreground leading-relaxed">
+      <section className="glass-card p-6">
+        <h3 className="mb-3 text-lg font-semibold text-foreground">About this result</h3>
+        <p className="text-sm leading-relaxed text-foreground">
           {prediction.overall_assessment}
         </p>
-      </div>
-
-      {/* Recommendations */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Clinical Recommendations</h3>
-        <ul className="space-y-2">
-          {prediction.recommendations.map((rec, idx) => (
-            <li key={idx} className="flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-accent mt-0.5 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="text-foreground">{rec}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Metadata */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground glass-card p-4">
-        <div>
-          <p>Analysis Date: {new Date(prediction.analysis_date).toLocaleString()}</p>
-        </div>
-        <div className="text-right">
+        <div className="mt-4 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+          <p>Analysis date: {new Date(prediction.analysis_date).toLocaleString()}</p>
           <p>Model: {prediction.model_version}</p>
         </div>
-      </div>
+      </section>
 
-      <div className="p-4 glass-card text-sm text-foreground">
-        <p className="font-semibold mb-1">Disclaimer</p>
-        <p>This analysis is AI-assisted and for reference only. Clinical diagnosis should be made by qualified healthcare professionals.</p>
+      <div className="glass-card p-4 text-sm text-foreground">
+        <p className="font-semibold">Research-use limitation</p>
+        <p className="mt-1">
+          This demo output is not medical advice and must not be used as a substitute
+          for interpretation by a qualified healthcare professional.
+        </p>
       </div>
     </div>
   )

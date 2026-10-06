@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [currentPrediction, setCurrentPrediction] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisError, setAnalysisError] = useState('')
   const [historyRefresh, setHistoryRefresh] = useState(0)
 
   useEffect(() => {
@@ -31,12 +32,14 @@ export default function DashboardPage() {
     checkAuth()
   }, [router])
 
-  async function handleUploadComplete(uploadId: string, fileName: string) {
+  async function handleUploadComplete(uploadId: string, fileName: string, file: File) {
     setIsAnalyzing(true)
+    setAnalysisError('')
     try {
       const formData = new FormData()
       formData.append('xrayUploadId', uploadId)
       formData.append('fileName', fileName)
+      formData.append('file', file, file.name)
 
       const response = await fetch('/api/predict', {
         method: 'POST',
@@ -45,12 +48,16 @@ export default function DashboardPage() {
 
       const data = await response.json()
 
-      if (data.success) {
-        setCurrentPrediction(data.prediction)
-        setHistoryRefresh(prev => prev + 1)
+      if (!response.ok) {
+        throw new Error(data.error || 'APEX-Net analysis failed')
       }
+      setCurrentPrediction(data.prediction)
+      setHistoryRefresh(prev => prev + 1)
     } catch (error) {
       console.error('Analysis error:', error)
+      setAnalysisError(
+        error instanceof Error ? error.message : 'Unable to analyze this image'
+      )
     } finally {
       setIsAnalyzing(false)
     }
@@ -85,6 +92,11 @@ export default function DashboardPage() {
                 onUploadComplete={handleUploadComplete}
                 isAnalyzing={isAnalyzing}
               />
+              {analysisError && (
+                <p role="alert" className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
+                  {analysisError}
+                </p>
+              )}
             </div>
 
             {/* Current Results */}

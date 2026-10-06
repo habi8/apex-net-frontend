@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 
 interface UploadAreaProps {
-  onUploadComplete: (uploadId: string, fileName: string) => void
+  onUploadComplete: (uploadId: string, fileName: string, file: File) => void
   isAnalyzing?: boolean
 }
 
@@ -49,7 +49,7 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
 
       setProgress(100)
       setIsUploading(false)
-      onUploadComplete(data.uploadId, data.fileName)
+      onUploadComplete(data.uploadId, data.fileName, file)
     } catch (err) {
       setError('An error occurred during upload')
       setIsUploading(false)
@@ -93,7 +93,7 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/bmp"
           onChange={(e) => e.target.files && handleFile(e.target.files[0])}
           className="hidden"
           disabled={isUploading || isAnalyzing}
@@ -134,7 +134,7 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
           </Button>
 
           <p className="text-xs text-muted-foreground">
-            JPG, PNG, DICOM up to 10MB
+            JPG, PNG, WEBP, or BMP up to 10MB
           </p>
         </div>
       </div>
