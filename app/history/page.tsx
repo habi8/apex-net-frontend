@@ -31,11 +31,13 @@ export default function HistoryPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showBulkDeleteConfirmation, setShowBulkDeleteConfirmation] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   function cancelSelection() {
     setIsSelecting(false)
     setSelectedIds([])
     setShowBulkDeleteConfirmation(false)
+    setPendingDeleteId(null)
     setDeleteError('')
   }
 
@@ -45,7 +47,29 @@ export default function HistoryPage() {
     )
   }
 
-  async function deleteSelectedAnalyses() {
+  async function confirmDelete() {
+    if (pendingDeleteId) {
+      const id = pendingDeleteId
+      setDeletingId(id)
+      setDeleteError('')
+      try {
+        const response = await fetch(`/api/predictions/${id}`, { method: 'DELETE' })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data.error || 'Unable to delete this analysis')
+        }
+        setHistory((items) => items.filter((item) => item.id !== id))
+        setSelectedIds((ids) => ids.filter((selectedId) => selectedId !== id))
+        setShowBulkDeleteConfirmation(false)
+        setPendingDeleteId(null)
+      } catch (error) {
+        setDeleteError(error instanceof Error ? error.message : 'Unable to delete this analysis')
+      } finally {
+        setDeletingId(null)
+      }
+      return
+    }
+
     setIsBulkDeleting(true)
     setDeleteError('')
     try {
@@ -69,25 +93,9 @@ export default function HistoryPage() {
   }
 
   async function deleteAnalysis(id: string) {
-    if (!window.confirm('Delete this analysis from your history?')) {
-      return
-    }
-
-    setDeletingId(id)
+    setPendingDeleteId(id)
+    setShowBulkDeleteConfirmation(true)
     setDeleteError('')
-    try {
-      const response = await fetch(`/api/predictions/${id}`, { method: 'DELETE' })
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Unable to delete this analysis')
-      }
-      setHistory((items) => items.filter((item) => item.id !== id))
-      setSelectedIds((ids) => ids.filter((selectedId) => selectedId !== id))
-    } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : 'Unable to delete this analysis')
-    } finally {
-      setDeletingId(null)
-    }
   }
 
   useEffect(() => {
@@ -211,7 +219,10 @@ export default function HistoryPage() {
               </p>
               <button
                 type="button"
-                onClick={() => setShowBulkDeleteConfirmation(true)}
+                onClick={() => {
+                  setPendingDeleteId(null)
+                  setShowBulkDeleteConfirmation(true)
+                }}
                 disabled={selectedIds.length === 0}
                 className="glass-button h-11 px-5 text-red-700 disabled:opacity-50 dark:text-red-300"
               >
@@ -346,32 +357,39 @@ export default function HistoryPage() {
           <section
             role="alertdialog"
             aria-modal="true"
-            aria-labelledby="bulk-delete-title"
-            aria-describedby="bulk-delete-description"
-            className="glass-card w-full max-w-md p-6 shadow-2xl"
+            aria-labelledby="delete-confirmation-title"
+            aria-describedby="delete-confirmation-description"
+            className="glass-card w-full max-w-md bg-background/95 p-6 shadow-2xl dark:bg-slate-900/95"
           >
-            <h2 id="bulk-delete-title" className="text-xl font-semibold text-foreground">
-              Delete selected analyses?
+            <h2 id="delete-confirmation-title" className="text-xl font-semibold text-foreground">
+              {pendingDeleteId ? 'Delete this analysis?' : 'Delete selected analyses?'}
             </h2>
-            <p id="bulk-delete-description" className="mt-3 text-sm text-muted-foreground">
-              This will permanently delete {selectedIds.length} selected {selectedIds.length === 1 ? 'result' : 'results'} from your history.
+            <p id="delete-confirmation-description" className="mt-3 text-sm text-muted-foreground">
+              {pendingDeleteId
+                ? 'This will permanently delete this result from your history.'
+                : `This will permanently delete ${selectedIds.length} selected ${selectedIds.length === 1 ? 'result' : 'results'} from your history.`}
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setShowBulkDeleteConfirmation(false)}
-                disabled={isBulkDeleting}
-                className="glass-button"
+                onClick={() => {
+                  setShowBulkDeleteConfirmation(false)
+                  setPendingDeleteId(null)
+                }}
+                disabled={isBulkDeleting || deletingId !== null}
+                className="glass-button h-11 px-5"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={deleteSelectedAnalyses}
-                disabled={isBulkDeleting}
+                onClick={confirmDelete}
+                disabled={isBulkDeleting || deletingId !== null}
                 className="glass-button h-11 px-5 text-red-700 disabled:opacity-50 dark:text-red-300"
               >
-                {isBulkDeleting ? 'Deleting...' : 'Delete permanently'}
+                {isBulkDeleting || deletingId !== null
+                  ? 'Deleting...'
+                  : 'Delete permanently'}
               </button>
             </div>
           </section>
