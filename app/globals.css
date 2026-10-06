@@ -640,6 +640,31 @@ input[type='reset'] {
       0 2px 6px -2px rgba(15, 23, 37, 0.04);
   }
 
+  .themed-scrollbar {
+    scrollbar-color: color-mix(in srgb, var(--primary) 55%, transparent) transparent;
+    scrollbar-width: thin;
+  }
+
+  .themed-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .themed-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .themed-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary) 55%, transparent);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  .themed-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--primary) 80%, transparent);
+    background-clip: padding-box;
+  }
+
   :root[data-theme='dark'] .glass-card,
   .dark .glass-card {
     background: rgba(15, 23, 37, 0.5);

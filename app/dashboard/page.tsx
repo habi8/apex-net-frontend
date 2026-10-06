@@ -7,6 +7,7 @@ import { UploadArea } from '@/components/upload-area'
 import { PredictionResults } from '@/components/prediction-results'
 import { AnalysisHistory } from '@/components/analysis-history'
 import { AppHeader } from '@/components/app-header'
+import { DashboardQuickStats } from '@/components/dashboard-quick-stats'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -119,23 +120,10 @@ export default function DashboardPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="glass-card p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Quick Stats</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Analyses</p>
-                  <p className="text-2xl font-bold text-primary">-</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Confidence</p>
-                  <p className="text-2xl font-bold text-primary">-</p>
-                </div>
-                <div className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Model version</p>
-                  <p className="font-mono text-sm text-foreground">APEX-v2.1</p>
-                </div>
-              </div>
-            </div>
+            <DashboardQuickStats
+              userId={user.id}
+              refreshTrigger={historyRefresh}
+            />
 
             <AnalysisHistory
               refreshTrigger={historyRefresh}
@@ -143,6 +131,7 @@ export default function DashboardPage() {
                 setCurrentPrediction((prediction: { id?: string } | null) =>
                   prediction?.id === id ? null : prediction
                 )
+                setHistoryRefresh((previous) => previous + 1)
                 if (currentPrediction?.id === id) {
                   setAnalysisComplete(false)
                 }
