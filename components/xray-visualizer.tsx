@@ -7,6 +7,7 @@ type Finding = {
   label: string
   region: string
   confidence: number
+
   // Rectangle in percentage of the image's display box (0-100)
   x: number
   y: number
@@ -18,39 +19,24 @@ type Finding = {
 type XrayCase = {
   id: string
   src: string
-  title: string
-  subtitle: string
   findings: Finding[]
 }
 
 const cases: XrayCase[] = [
   {
     id: 'pneumonia-left-mid',
-    src: '/xrays/lung.webp',
-    title: 'Left mid-lobe consolidation',
-    subtitle: 'Pattern consistent with bacterial pneumonia · 93% confidence',
+    src: '/home.jpg',
+  
     findings: [
       {
-        // Highlighted region in the left mid lung (visible in lung.webp)
-        label: 'Consolidation',
         region: 'Left mid-lobe',
-        confidence: 93,
         x: 36,
         y: 34,
         w: 26,
         h: 22,
         delay: 350,
-      },
-      {
-        // Secondary patch in the right lower lung
-        label: 'Opacity',
-        region: 'Right lower lobe',
-        confidence: 78,
-        x: 64,
-        y: 58,
-        w: 18,
-        h: 16,
-        delay: 900,
+        label: '',
+        confidence: 93,
       },
     ],
   },
@@ -83,7 +69,6 @@ export function XrayVisualizer() {
         {/* Film header */}
         <div className="xray-frame-header">
           <span className="xray-tag">APEX-NET · AI PREVIEW</span>
-          <span className="xray-tag xray-tag-soft">LIVE</span>
         </div>
 
         {/* Scan line sweep */}
@@ -126,8 +111,7 @@ export function XrayVisualizer() {
 
         {/* Caption / readout */}
         <div className="xray-readout" key={`${activeCase.id}-r`}>
-          <div className="xray-readout-title">{activeCase.title}</div>
-          <div className="xray-readout-sub">{activeCase.subtitle}</div>
+  
         </div>
 
         {/* Pagination dots */}
