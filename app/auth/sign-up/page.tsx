@@ -61,8 +61,8 @@ export default function SignUpPage() {
         <ThemeToggle />
       </div>
       <div className="w-full max-w-md">
-        <div className="text-center mb-4">
-          <div className="flex justify-center mb-2">
+        <div className="text-center mb-1">
+          <div className="flex justify-center mb-1">
             <Link href="/">
               <Logo size={252} />
             </Link>

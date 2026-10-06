@@ -24,6 +24,29 @@ export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState('')
+
+  async function deleteAnalysis(id: string) {
+    if (!window.confirm('Delete this analysis from your history?')) {
+      return
+    }
+
+    setDeletingId(id)
+    setDeleteError('')
+    try {
+      const response = await fetch(`/api/predictions/${id}`, { method: 'DELETE' })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to delete this analysis')
+      }
+      setHistory((items) => items.filter((item) => item.id !== id))
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Unable to delete this analysis')
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   useEffect(() => {
     async function checkAuthAndLoadHistory() {
@@ -133,8 +156,11 @@ export default function HistoryPage() {
               )
 
               return (
-                <Link key={item.id} href={`/history/${item.id}`}>
-                  <div className="glass-card overflow-hidden hover:scale-[1.02] hover:-translate-y-0.5 transition-all cursor-pointer h-full">
+                <div key={item.id} className="glass-card overflow-hidden transition-all h-full">
+                  <Link
+                    href={`/history/${item.id}`}
+                    className="block hover:scale-[1.02] hover:-translate-y-0.5 transition-all"
+                  >
                     {/* Placeholder Thumbnail */}
                     <div className="h-40 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                       <svg
@@ -169,12 +195,24 @@ export default function HistoryPage() {
                         </p>
                       </div>
                     </div>
+                  </Link>
+                  <div className="px-4 pb-4">
+                    <button
+                      type="button"
+                      onClick={() => deleteAnalysis(item.id)}
+                      disabled={deletingId !== null}
+                      aria-label={`Delete analysis ${item.file_name}`}
+                      className="text-sm font-medium text-red-700 hover:underline disabled:opacity-50 dark:text-red-300"
+                    >
+                      {deletingId === item.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </div>
-                </Link>
+                </div>
               )
             })}
           </div>
         )}
+        {deleteError && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{deleteError}</p>}
       </main>
     </div>
   )

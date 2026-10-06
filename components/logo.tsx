@@ -10,7 +10,7 @@ export function Logo({
   return (
     <span
       className={`relative inline-block ${className ?? ''}`.trim()}
-      style={{ width: size, height: size }}
+      style={{ width: size }}
     >
       {/* Light theme logo */}
       <Image

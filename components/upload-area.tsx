@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/button'
 
 interface UploadAreaProps {
   onUploadComplete: (uploadId: string, fileName: string, file: File) => void
+  onUploadStart?: () => void
   isAnalyzing?: boolean
+  analysisComplete?: boolean
 }
 
-export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadAreaProps) {
+export function UploadArea({
+  onUploadComplete,
+  onUploadStart,
+  isAnalyzing = false,
+  analysisComplete = false,
+}: UploadAreaProps) {
   const [isDragActive, setIsDragActive] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState('')
@@ -27,8 +34,9 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
     }
 
     setError('')
-    setIsUploading(true)
     setProgress(0)
+    onUploadStart?.()
+    setIsUploading(true)
 
     try {
       const formData = new FormData()
@@ -157,9 +165,16 @@ export function UploadArea({ onUploadComplete, isAnalyzing = false }: UploadArea
         </div>
       )}
 
-      {progress === 100 && !isAnalyzing && (
-        <div className="mt-4 p-3 bg-green-500/10 border-l-4 border-green-500 text-green-700 dark:text-green-300 rounded-xl text-sm">
-          Upload complete! Analyzing your X-ray...
+      {progress === 100 && isAnalyzing && (
+        <div role="status" aria-live="polite" className="mt-4 flex items-center gap-3 p-3 bg-primary/10 border-l-4 border-primary text-foreground rounded-xl text-sm">
+          <span aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+          Analyzing your X-ray...
+        </div>
+      )}
+
+      {progress === 100 && !isAnalyzing && analysisComplete && (
+        <div role="status" aria-live="polite" className="mt-4 p-3 bg-green-500/10 border-l-4 border-green-500 text-green-700 dark:text-green-300 rounded-xl text-sm">
+          Analysis complete.
         </div>
       )}
     </div>

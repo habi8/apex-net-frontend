@@ -21,9 +21,16 @@ interface PredictionResultsProps {
 export function PredictionResults({ prediction }: PredictionResultsProps) {
   const heatmapLabels = Object.keys(prediction.heatmaps ?? {})
   const [selectedLabel, setSelectedLabel] = useState(heatmapLabels[0] ?? '')
+  const [showAllFindings, setShowAllFindings] = useState(false)
   const availableLabel = heatmapLabels.includes(selectedLabel)
     ? selectedLabel
     : (heatmapLabels[0] ?? '')
+  const sortedFindings = [...prediction.findings].sort(
+    (a, b) => b.confidence - a.confidence,
+  )
+  const visibleFindings = showAllFindings
+    ? sortedFindings
+    : sortedFindings.slice(0, 3)
 
   return (
     <div className="space-y-6">
@@ -70,7 +77,7 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
       <section className="glass-card p-6">
         <h3 className="mb-4 text-lg font-semibold text-foreground">APEX-Net model scores</h3>
         <div className="space-y-3">
-          {prediction.findings.map((finding) => (
+          {visibleFindings.map((finding) => (
             <div key={finding.label}>
               <div className="mb-1 flex items-center justify-between gap-4">
                 <button
@@ -94,6 +101,16 @@ export function PredictionResults({ prediction }: PredictionResultsProps) {
             </div>
           ))}
         </div>
+        {sortedFindings.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setShowAllFindings((showAll) => !showAll)}
+            aria-expanded={showAllFindings}
+            className="mt-4 text-sm font-medium text-primary hover:underline"
+          >
+            {showAllFindings ? 'See less' : 'See more'}
+          </button>
+        )}
         <p className="mt-4 text-xs text-muted-foreground">
           Scores are sigmoid model outputs and are not calibrated diagnostic
           probabilities or estimates of disease severity.

@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [currentPrediction, setCurrentPrediction] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisComplete, setAnalysisComplete] = useState(false)
   const [analysisError, setAnalysisError] = useState('')
   const [historyRefresh, setHistoryRefresh] = useState(0)
 
@@ -34,6 +35,7 @@ export default function DashboardPage() {
 
   async function handleUploadComplete(uploadId: string, fileName: string, file: File) {
     setIsAnalyzing(true)
+    setAnalysisComplete(false)
     setAnalysisError('')
     try {
       const formData = new FormData()
@@ -52,6 +54,7 @@ export default function DashboardPage() {
         throw new Error(data.error || 'APEX-Net analysis failed')
       }
       setCurrentPrediction(data.prediction)
+      setAnalysisComplete(true)
       setHistoryRefresh(prev => prev + 1)
     } catch (error) {
       console.error('Analysis error:', error)
@@ -90,7 +93,13 @@ export default function DashboardPage() {
 
               <UploadArea
                 onUploadComplete={handleUploadComplete}
+                onUploadStart={() => {
+                  setCurrentPrediction(null)
+                  setAnalysisComplete(false)
+                  setAnalysisError('')
+                }}
                 isAnalyzing={isAnalyzing}
+                analysisComplete={analysisComplete}
               />
               {analysisError && (
                 <p role="alert" className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
@@ -128,7 +137,17 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <AnalysisHistory refreshTrigger={historyRefresh} />
+            <AnalysisHistory
+              refreshTrigger={historyRefresh}
+              onDelete={(id) => {
+                setCurrentPrediction((prediction: { id?: string } | null) =>
+                  prediction?.id === id ? null : prediction
+                )
+                if (currentPrediction?.id === id) {
+                  setAnalysisComplete(false)
+                }
+              }}
+            />
           </div>
         </div>
       </main>
