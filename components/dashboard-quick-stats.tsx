@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 
 interface PredictionRecord {
   created_at: string
-  confidence_score: number | null
   prediction_data: {
     findings?: Array<{
       label: string
@@ -81,18 +80,29 @@ export function DashboardQuickStats({
       const supabase = createClient()
       const { data, error: queryError } = await supabase
         .from('predictions')
-        .select('created_at, confidence_score, prediction_data')
+        .select('created_at, prediction_data')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
       if (queryError) {
-        throw queryError
+        console.error(
+          `Error loading dashboard stats (${queryError.code}): ${queryError.message}`,
+          {
+            details: queryError.details,
+            hint: queryError.hint,
+          },
+        )
+        setError(`Unable to load analysis statistics: ${queryError.message}`)
+        return
       }
 
       setRecords((data ?? []) as PredictionRecord[])
     } catch (loadError) {
-      console.error('Error loading dashboard stats:', loadError)
-      setError('Unable to load analysis statistics.')
+      const message = loadError instanceof Error
+        ? loadError.message
+        : 'An unexpected error occurred.'
+      console.error(`Error loading dashboard stats: ${message}`, loadError)
+      setError(`Unable to load analysis statistics: ${message}`)
     } finally {
       setIsLoading(false)
     }
@@ -130,10 +140,7 @@ export function DashboardQuickStats({
   const stats = useMemo(() => {
     const confidenceScores = records.map((record) => {
       const findings = record.prediction_data?.findings ?? []
-      const highestFinding = Math.max(0, ...findings.map((finding) => finding.confidence))
-      return typeof record.confidence_score === 'number'
-        ? record.confidence_score
-        : highestFinding
+      return Math.max(0, ...findings.map((finding) => finding.confidence))
     })
     const averageConfidence = confidenceScores.length
       ? confidenceScores.reduce((total, score) => total + score, 0) / confidenceScores.length
@@ -256,13 +263,17 @@ export function DashboardQuickStats({
               <div>
                 <p className="text-xs text-muted-foreground">Total analyses</p>
                 <p className="mt-1 text-2xl font-semibold text-primary">
-                  {isLoading ? '—' : records.length}
+                  {isLoading
+                    ? <span className="inline-block h-7 w-12 animate-pulse rounded-md bg-secondary/70 align-middle" aria-label="Loading" />
+                    : records.length}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Average top score</p>
                 <p className="mt-1 text-2xl font-semibold text-primary">
-                  {isLoading ? '—' : `${(stats.averageConfidence * 100).toFixed(1)}%`}
+                  {isLoading
+                    ? <span className="inline-block h-7 w-16 animate-pulse rounded-md bg-secondary/70 align-middle" aria-label="Loading" />
+                    : `${(stats.averageConfidence * 100).toFixed(1)}%`}
                 </p>
               </div>
             </div>

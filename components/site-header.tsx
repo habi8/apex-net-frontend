@@ -17,7 +17,7 @@ export function SiteHeader() {
           <Link href="/auth/login" className="site-btn site-btn-ghost">
             Sign In
           </Link>
-          <Link href="/auth/sign-up" className="site-btn site-btn-gradient">
+          <Link href="/auth/sign-up" className="site-btn site-btn-primary">
             Get Started
           </Link>
         </nav>

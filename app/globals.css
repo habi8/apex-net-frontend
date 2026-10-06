@@ -1,10 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
+
+html {
+  scrollbar-color: color-mix(in srgb, var(--primary) 55%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary) 55%, transparent);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary) 80%, transparent);
+  background-clip: padding-box;
+}
 
 /* Cursor pointer for interactive elements */
 a,
@@ -59,9 +84,10 @@ input[type='reset'] {
 
 :root {
   color-scheme: light;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --section-space: clamp(3rem, 6vw, 5rem);
   --background: #F4F8FF;
   --foreground: #1A1F3A;
   --card: #FFFFFF;
@@ -99,7 +125,7 @@ input[type='reset'] {
 .dark,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
   --background: #0F1725;
@@ -108,8 +134,8 @@ input[type='reset'] {
   --card-foreground: #F5F7FA;
   --popover: #1A2332;
   --popover-foreground: #F5F7FA;
-  --primary: #0052CC;
-  --primary-foreground: #FFFFFF;
+  --primary: #83B6FF;
+  --primary-foreground: #0F1725;
   --secondary: #1A2332;
   --secondary-foreground: #F5F7FA;
   --muted: #2B3D52;
@@ -119,26 +145,26 @@ input[type='reset'] {
   --destructive: #FF5A5A;
   --border: #2B3D52;
   --input: #1A2332;
-  --ring: #0052CC;
-  --chart-1: #0052CC;
-  --chart-2: #00D4FF;
+  --ring: #83B6FF;
+  --chart-1: #83B6FF;
+  --chart-2: #67D7E8;
   --chart-3: #A1AEC4;
   --chart-4: #5A6B8A;
   --chart-5: #2B3D52;
   --sidebar: #1A2332;
   --sidebar-foreground: #F5F7FA;
-  --sidebar-primary: #0052CC;
-  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-primary: #83B6FF;
+  --sidebar-primary-foreground: #0F1725;
   --sidebar-accent: #2B3D52;
-  --sidebar-accent-foreground: #00D4FF;
+  --sidebar-accent-foreground: #83B6FF;
   --sidebar-border: #2B3D52;
-  --sidebar-ring: #0052CC;
+  --sidebar-ring: #83B6FF;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light):not([data-theme='light']) {
     color-scheme: dark;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-heading: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
     --background: #0F1725;
@@ -147,8 +173,8 @@ input[type='reset'] {
     --card-foreground: #F5F7FA;
     --popover: #1A2332;
     --popover-foreground: #F5F7FA;
-    --primary: #0052CC;
-    --primary-foreground: #FFFFFF;
+    --primary: #83B6FF;
+    --primary-foreground: #0F1725;
     --secondary: #1A2332;
     --secondary-foreground: #F5F7FA;
     --muted: #2B3D52;
@@ -158,20 +184,20 @@ input[type='reset'] {
     --destructive: #FF5A5A;
     --border: #2B3D52;
     --input: #1A2332;
-    --ring: #0052CC;
-    --chart-1: #0052CC;
-    --chart-2: #00D4FF;
+    --ring: #83B6FF;
+    --chart-1: #83B6FF;
+    --chart-2: #67D7E8;
     --chart-3: #A1AEC4;
     --chart-4: #5A6B8A;
     --chart-5: #2B3D52;
     --sidebar: #1A2332;
     --sidebar-foreground: #F5F7FA;
-    --sidebar-primary: #0052CC;
-    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-primary: #83B6FF;
+    --sidebar-primary-foreground: #0F1725;
     --sidebar-accent: #2B3D52;
-    --sidebar-accent-foreground: #00D4FF;
+    --sidebar-accent-foreground: #83B6FF;
     --sidebar-border: #2B3D52;
-    --sidebar-ring: #0052CC;
+    --sidebar-ring: #83B6FF;
   }
 }
 
@@ -285,13 +311,8 @@ input[type='reset'] {
     background-image: radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 40%),
       radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%);
     opacity: 1;
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 7rem, black 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, black 7rem, black 100%);
   }
 
   .pill {
@@ -443,7 +464,7 @@ input[type='reset'] {
     font-weight: 500;
     letter-spacing: -0.005em;
     border-radius: 0.75rem;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
@@ -474,17 +495,12 @@ input[type='reset'] {
   .site-btn-ghost:hover {
     background: rgba(15, 23, 37, 0.05);
     border-color: rgba(15, 23, 37, 0.2);
-    transform: translateY(-1px);
   }
 
   :root[data-theme='dark'] .site-btn-ghost:hover,
   .dark .site-btn-ghost:hover {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.24);
-  }
-
-  .site-btn-ghost:active {
-    transform: translateY(0);
   }
 
   /* Hide Sign In on the smallest screens to keep the pill compact */
@@ -494,52 +510,16 @@ input[type='reset'] {
     }
   }
 
-  /* Primary gradient button (Get Started) */
-  .site-btn-gradient {
-    background: linear-gradient(135deg, #0066ff 0%, #4f46e5 100%);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.25) inset,
-      0 4px 14px -4px rgba(0, 102, 255, 0.55),
-      0 2px 4px -1px rgba(79, 70, 229, 0.25);
-    position: relative;
-    overflow: hidden;
+  /* Primary navigation button */
+  .site-btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary);
   }
 
-  /* Subtle moving sheen on hover */
-  .site-btn-gradient::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0) 50%,
-      rgba(255, 255, 255, 0.18) 100%
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  .site-btn-gradient:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
-      0 8px 22px -6px rgba(0, 102, 255, 0.65),
-      0 3px 6px -2px rgba(79, 70, 229, 0.35);
-  }
-
-  .site-btn-gradient:hover::before {
-    opacity: 1;
-  }
-
-  .site-btn-gradient:active {
-    transform: translateY(0);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.2) inset,
-      0 2px 8px -2px rgba(0, 102, 255, 0.5);
+  .site-btn-primary:hover {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+    border-color: color-mix(in srgb, var(--primary) 88%, black);
   }
 
   /* ThemeToggle button — base style + variants for the pill and standalone use */
@@ -555,7 +535,7 @@ input[type='reset'] {
     color: var(--foreground);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
   }
 
@@ -699,7 +679,7 @@ input[type='reset'] {
     border-radius: 0.625rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     box-shadow:
       0 1px 2px 0 rgba(15, 23, 37, 0.04) inset;
   }
@@ -776,7 +756,7 @@ input[type='reset'] {
     border-radius: 0.75rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
@@ -785,7 +765,6 @@ input[type='reset'] {
   .glass-button:hover {
     background: rgba(255, 255, 255, 0.7);
     border-color: rgba(15, 23, 37, 0.2);
-    transform: translateY(-1px);
   }
 
   .glass-button.is-active {
@@ -848,21 +827,16 @@ input[type='reset'] {
     box-shadow: 0 4px 14px -4px rgba(239, 68, 68, 0.4);
   }
 
-  /* Gradient primary button - for important CTAs */
+  /* Primary button - for important CTAs */
   .glass-button-primary {
-    background: linear-gradient(135deg, #0066ff 0%, #4f46e5 100%);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.25) inset,
-      0 4px 14px -4px rgba(0, 102, 255, 0.55);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: 1px solid var(--primary);
   }
 
   .glass-button-primary:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
-      0 8px 22px -6px rgba(0, 102, 255, 0.65);
+    background: color-mix(in srgb, var(--primary) 88%, black);
+    border-color: color-mix(in srgb, var(--primary) 88%, black);
   }
 
   /* X-ray visualizer */
@@ -953,18 +927,24 @@ input[type='reset'] {
       180deg,
       transparent 0%,
       rgba(0, 212, 255, 0.0) 45%,
-      rgba(0, 212, 255, 0.18) 50%,
+      rgba(0, 212, 255, 0.1) 50%,
       rgba(0, 212, 255, 0.0) 55%,
       transparent 100%
     );
     background-size: 100% 200%;
-    animation: xray-scan 3.6s linear infinite;
+    animation: xray-scan 4.8s linear infinite;
     mix-blend-mode: screen;
   }
 
   @keyframes xray-scan {
     0% { background-position: 0 -100%; }
     100% { background-position: 0 100%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xray-scanline {
+      animation: none;
+    }
   }
 
   .xray-slides {

@@ -95,7 +95,7 @@ export function UploadArea({
         className={`relative glass-card p-12 text-center transition cursor-pointer ${
           isDragActive
             ? 'ring-2 ring-primary/50 bg-primary/5'
-            : 'hover:bg-white/40'
+            : 'hover:bg-white/40 dark:hover:bg-white/5'
         }`}
       >
         <input
