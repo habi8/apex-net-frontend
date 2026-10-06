@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     const prediction = backendBody.prediction
-    const { heatmaps, ...storedPrediction } = prediction
+    const { heatmaps, ...predictionWithoutHeatmaps } = prediction
     if (xrayUploadId.startsWith('local-')) {
       return NextResponse.json({
         success: true,
@@ -110,6 +110,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const storedHeatmaps = Object.fromEntries(
+      Object.entries(heatmaps ?? {}).filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
+    )
+    const storedPrediction = {
+      ...predictionWithoutHeatmaps,
+      ...(Object.keys(storedHeatmaps).length > 0 && { heatmaps: storedHeatmaps }),
+    }
     const scores = prediction.findings.map(
       (finding: { confidence: number }) => finding.confidence,
     )

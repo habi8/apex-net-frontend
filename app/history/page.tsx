@@ -10,6 +10,7 @@ interface HistoryItem {
   id: string
   created_at: string
   file_name: string
+  heatmap_url?: string
   prediction_data: {
     findings: Array<{
       label: string
@@ -26,6 +27,46 @@ export default function HistoryPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
+  const [isSelecting, setIsSelecting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [showBulkDeleteConfirmation, setShowBulkDeleteConfirmation] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
+
+  function cancelSelection() {
+    setIsSelecting(false)
+    setSelectedIds([])
+    setShowBulkDeleteConfirmation(false)
+    setDeleteError('')
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((ids) =>
+      ids.includes(id) ? ids.filter((selectedId) => selectedId !== id) : [...ids, id],
+    )
+  }
+
+  async function deleteSelectedAnalyses() {
+    setIsBulkDeleting(true)
+    setDeleteError('')
+    try {
+      const response = await fetch('/api/predictions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to delete selected analyses')
+      }
+      const deletedIds = new Set<string>(data.deletedIds)
+      setHistory((items) => items.filter((item) => !deletedIds.has(item.id)))
+      cancelSelection()
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Unable to delete selected analyses')
+    } finally {
+      setIsBulkDeleting(false)
+    }
+  }
 
   async function deleteAnalysis(id: string) {
     if (!window.confirm('Delete this analysis from your history?')) {
@@ -41,6 +82,7 @@ export default function HistoryPage() {
         throw new Error(data.error || 'Unable to delete this analysis')
       }
       setHistory((items) => items.filter((item) => item.id !== id))
+      setSelectedIds((ids) => ids.filter((selectedId) => selectedId !== id))
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Unable to delete this analysis')
     } finally {
@@ -77,11 +119,36 @@ export default function HistoryPage() {
         return
       }
 
-      const formattedHistory = predictions.map((pred: any) => ({
-        id: pred.id,
-        created_at: pred.created_at,
-        file_name: pred.xray_uploads?.file_name || 'Unknown file',
-        prediction_data: pred.prediction_data,
+      const formattedHistory = await Promise.all(predictions.map(async (pred: any) => {
+        const upload = Array.isArray(pred.xray_uploads)
+          ? pred.xray_uploads[0]
+          : pred.xray_uploads
+        const heatmapPath = Object.values(pred.prediction_data.heatmaps ?? {})
+          .find((path): path is string => typeof path === 'string')
+        let heatmapUrl: string | undefined
+
+        if (heatmapPath) {
+          if (heatmapPath.startsWith('data:image/')) {
+            heatmapUrl = heatmapPath
+          } else {
+            const { data, error: imageError } = await supabase.storage
+              .from('xray-uploads')
+              .createSignedUrl(heatmapPath, 60 * 60)
+            if (imageError) {
+              console.error(`Error loading history heatmap for ${pred.id}:`, imageError)
+            } else {
+              heatmapUrl = data.signedUrl
+            }
+          }
+        }
+
+        return {
+          id: pred.id,
+          created_at: pred.created_at,
+          file_name: upload?.file_name || 'Unknown file',
+          heatmap_url: heatmapUrl,
+          prediction_data: pred.prediction_data,
+        }
       }))
 
       setHistory(formattedHistory)
@@ -113,19 +180,48 @@ export default function HistoryPage() {
         </div>
 
         {/* Sort Controls */}
-        <div className="mb-6 flex gap-2 sm:gap-3">
-          <button
-            onClick={() => setSortBy('newest')}
-            className={`glass-button ${sortBy === 'newest' ? 'is-active' : ''}`}
-          >
-            Newest First
-          </button>
-          <button
-            onClick={() => setSortBy('oldest')}
-            className={`glass-button ${sortBy === 'oldest' ? 'is-active' : ''}`}
-          >
-            Oldest First
-          </button>
+        <div className="mb-6 flex flex-wrap items-center gap-2 sm:gap-3">
+          {!isSelecting && (
+            <>
+              <button
+                onClick={() => setSortBy('newest')}
+                className={`glass-button ${sortBy === 'newest' ? 'is-active' : ''}`}
+              >
+                Newest First
+              </button>
+              <button
+                onClick={() => setSortBy('oldest')}
+                className={`glass-button ${sortBy === 'oldest' ? 'is-active' : ''}`}
+              >
+                Oldest First
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSelecting(true)}
+                className="glass-button"
+              >
+                Select
+              </button>
+            </>
+          )}
+          {isSelecting && (
+            <>
+              <p className="mr-auto text-sm text-muted-foreground" aria-live="polite">
+                {selectedIds.length} selected
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowBulkDeleteConfirmation(true)}
+                disabled={selectedIds.length === 0}
+                className="glass-button h-11 px-5 text-red-700 disabled:opacity-50 dark:text-red-300"
+              >
+                Delete selected
+              </button>
+              <button type="button" onClick={cancelSelection} className="glass-button">
+                Cancel
+              </button>
+            </>
+          )}
         </div>
 
         {/* History Grid */}
@@ -155,30 +251,31 @@ export default function HistoryPage() {
                 prev.confidence > current.confidence ? prev : current
               )
 
-              return (
-                <div key={item.id} className="glass-card overflow-hidden transition-all h-full">
-                  <Link
-                    href={`/history/${item.id}`}
-                    className="block hover:scale-[1.02] hover:-translate-y-0.5 transition-all"
-                  >
-                    {/* Placeholder Thumbnail */}
+              const cardContent = (
+                <>
                     <div className="h-40 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <svg
-                        className="w-16 h-16 text-primary/50"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      {item.heatmap_url ? (
+                        <img
+                          src={item.heatmap_url}
+                          alt={`X-ray heatmap for ${item.file_name}`}
+                          className="h-full w-full object-contain bg-black"
                         />
-                      </svg>
+                      ) : (
+                        <svg
+                          className="w-16 h-16 text-primary/50"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 00-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      )}
                     </div>
-
-                    {/* Content */}
                     <div className="p-4">
                       <p className="text-sm font-medium text-muted-foreground truncate">
                         {item.file_name}
@@ -195,12 +292,39 @@ export default function HistoryPage() {
                         </p>
                       </div>
                     </div>
-                  </Link>
+                </>
+              )
+
+              return (
+                <div key={item.id} className="glass-card relative overflow-hidden transition-all h-full">
+                  {isSelecting ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleSelected(item.id)}
+                      aria-pressed={selectedIds.includes(item.id)}
+                      aria-label={`${selectedIds.includes(item.id) ? 'Deselect' : 'Select'} analysis ${item.file_name}`}
+                      className={`block w-full text-left transition-all ${
+                        selectedIds.includes(item.id) ? 'ring-4 ring-primary' : ''
+                      }`}
+                    >
+                      {cardContent}
+                      <span className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-md border-2 border-white bg-background text-sm font-bold text-primary shadow">
+                        {selectedIds.includes(item.id) ? '✓' : ''}
+                      </span>
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/history/${item.id}`}
+                      className="block hover:scale-[1.02] hover:-translate-y-0.5 transition-all"
+                    >
+                      {cardContent}
+                    </Link>
+                  )}
                   <div className="px-4 pb-4">
                     <button
                       type="button"
                       onClick={() => deleteAnalysis(item.id)}
-                      disabled={deletingId !== null}
+                      disabled={deletingId !== null || isSelecting}
                       aria-label={`Delete analysis ${item.file_name}`}
                       className="text-sm font-medium text-red-700 hover:underline disabled:opacity-50 dark:text-red-300"
                     >
@@ -214,6 +338,45 @@ export default function HistoryPage() {
         )}
         {deleteError && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{deleteError}</p>}
       </main>
+      {showBulkDeleteConfirmation && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4"
+          role="presentation"
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="bulk-delete-title"
+            aria-describedby="bulk-delete-description"
+            className="glass-card w-full max-w-md p-6 shadow-2xl"
+          >
+            <h2 id="bulk-delete-title" className="text-xl font-semibold text-foreground">
+              Delete selected analyses?
+            </h2>
+            <p id="bulk-delete-description" className="mt-3 text-sm text-muted-foreground">
+              This will permanently delete {selectedIds.length} selected {selectedIds.length === 1 ? 'result' : 'results'} from your history.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowBulkDeleteConfirmation(false)}
+                disabled={isBulkDeleting}
+                className="glass-button"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={deleteSelectedAnalyses}
+                disabled={isBulkDeleting}
+                className="glass-button h-11 px-5 text-red-700 disabled:opacity-50 dark:text-red-300"
+              >
+                {isBulkDeleting ? 'Deleting...' : 'Delete permanently'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   )
 }

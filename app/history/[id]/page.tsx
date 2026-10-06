@@ -19,6 +19,8 @@ interface ResultDetail {
   file_name: string
   prediction_data: {
     findings: Finding[]
+    heatmaps?: Record<string, string>
+    heatmap_method?: string
     overall_assessment: string
     recommendations: string[]
     analysis_date: string
@@ -34,6 +36,7 @@ export default function ResultDetailPage() {
   const [user, setUser] = useState<any>(null)
   const [result, setResult] = useState<ResultDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedHeatmap, setSelectedHeatmap] = useState('')
 
   useEffect(() => {
     async function checkAuthAndLoadResult() {
@@ -66,13 +69,37 @@ export default function ResultDetailPage() {
         return
       }
 
-      const upload = predictions.xray_uploads?.[0]
+      const upload = Array.isArray(predictions.xray_uploads)
+        ? predictions.xray_uploads[0]
+        : predictions.xray_uploads
+      const storedHeatmaps = predictions.prediction_data.heatmaps ?? {}
+      const heatmaps = Object.fromEntries(
+        await Promise.all(
+          Object.entries(storedHeatmaps).map(async ([label, path]) => {
+            if (typeof path !== 'string') {
+              return [label, '']
+            }
+            if (path.startsWith('data:image/')) {
+              return [label, path]
+            }
+            const { data, error: imageError } = await supabase.storage
+              .from('xray-uploads')
+              .createSignedUrl(path, 60 * 60)
+            if (imageError) {
+              console.error(`Error loading heatmap for ${label}:`, imageError)
+              return [label, '']
+            }
+            return [label, data.signedUrl]
+          }),
+        ),
+      )
       setResult({
         id: predictions.id,
         created_at: predictions.created_at,
         file_name: upload?.file_name || 'Unknown file',
-        prediction_data: predictions.prediction_data,
+        prediction_data: { ...predictions.prediction_data, heatmaps },
       })
+      setSelectedHeatmap(Object.keys(heatmaps).find((label) => heatmaps[label]) ?? '')
       setIsLoading(false)
     }
 
@@ -179,25 +206,44 @@ export default function ResultDetailPage() {
           </p>
         </div>
 
-        {/* X-ray Image Placeholder */}
-        <div className="glass-card p-6 mb-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">X-ray Image</h2>
-          <div className="h-96 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
-            <svg
-              className="w-32 h-32 text-primary/50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+        {selectedHeatmap && result.prediction_data.heatmaps && (
+          <div className="glass-card p-6 mb-6">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              Attention heatmap: {selectedHeatmap}
+            </h2>
+            {result.prediction_data.heatmap_method && (
+              <p className="mb-4 text-sm text-muted-foreground">
+                {result.prediction_data.heatmap_method}
+              </p>
+            )}
+            <div className="overflow-hidden rounded-xl bg-black">
+              <img
+                src={result.prediction_data.heatmaps[selectedHeatmap]}
+                alt={`Model attention heatmap for ${selectedHeatmap}`}
+                className="mx-auto max-h-[640px] w-full object-contain"
               />
-            </svg>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {Object.keys(result.prediction_data.heatmaps)
+                .filter((label) => result.prediction_data.heatmaps?.[label])
+                .map((label) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => setSelectedHeatmap(label)}
+                    aria-pressed={selectedHeatmap === label}
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      selectedHeatmap === label
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Overall Assessment */}
         <div className="glass-card p-6 mb-6">

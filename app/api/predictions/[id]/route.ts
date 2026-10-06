@@ -22,7 +22,7 @@ export async function DELETE(
       .delete()
       .eq('id', id)
       .eq('user_id', user.id)
-      .select('id')
+      .select('id, prediction_data')
       .maybeSingle()
 
     if (error) {
@@ -32,6 +32,20 @@ export async function DELETE(
 
     if (!data) {
       return NextResponse.json({ error: 'Analysis not found' }, { status: 404 })
+    }
+
+    const heatmapPaths = Object.values(data.prediction_data?.heatmaps ?? {})
+      .filter(
+        (path): path is string =>
+          typeof path === 'string' && !path.startsWith('data:image/'),
+      )
+    if (heatmapPaths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from('xray-uploads')
+        .remove(heatmapPaths)
+      if (storageError) {
+        console.error('Unable to delete prediction heatmaps from storage:', storageError)
+      }
     }
 
     return NextResponse.json({ success: true })
