@@ -31,9 +31,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const configuredBackendUrl = process.env.APEX_BACKEND_URL?.trim()
     const backendUrl = (
-      process.env.APEX_BACKEND_URL ?? 'http://127.0.0.1:8000'
+      configuredBackendUrl ||
+      (process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : '')
     ).replace(/\/+$/, '')
+    if (!backendUrl) {
+      console.error('APEX_BACKEND_URL is not configured')
+      return NextResponse.json(
+        { error: 'APEX-Net backend is not configured on the server.' },
+        { status: 500 },
+      )
+    }
+
     const backendForm = new FormData()
     backendForm.append('file', image, image.name)
     backendForm.append('heatmap_count', '3')
@@ -51,7 +61,8 @@ export async function POST(request: NextRequest) {
         body: backendForm,
         cache: 'no-store',
       })
-    } catch {
+    } catch (error) {
+      console.error('APEX-Net backend request failed:', error)
       return NextResponse.json(
         { error: 'APEX-Net backend is unreachable. Check APEX_BACKEND_URL and start the inference API.' },
         { status: 503 },
