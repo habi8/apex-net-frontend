@@ -99,9 +99,12 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
+    let isCurrent = true
+
     async function checkAuthAndLoadHistory() {
       const supabase = createClient()
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const { data: { session }, error } = await supabase.auth.getSession()
+      const user = session?.user
 
       if (error || !user) {
         router.push('/auth/login')
@@ -124,50 +127,83 @@ export default function HistoryPage() {
 
       if (fetchError) {
         console.error('Error loading history:', fetchError)
+        setIsLoading(false)
         return
       }
 
-      const formattedHistory = await Promise.all(predictions.map(async (pred: any) => {
+      const formattedHistory = predictions.map((pred: any) => {
         const upload = Array.isArray(pred.xray_uploads)
           ? pred.xray_uploads[0]
           : pred.xray_uploads
         const heatmapPath = Object.values(pred.prediction_data.heatmaps ?? {})
           .find((path): path is string => typeof path === 'string')
-        let heatmapUrl: string | undefined
-
-        if (heatmapPath) {
-          if (heatmapPath.startsWith('data:image/')) {
-            heatmapUrl = heatmapPath
-          } else {
-            const { data, error: imageError } = await supabase.storage
-              .from('xray-uploads')
-              .createSignedUrl(heatmapPath, 60 * 60)
-            if (imageError) {
-              console.error(`Error loading history heatmap for ${pred.id}:`, imageError)
-            } else {
-              heatmapUrl = data.signedUrl
-            }
-          }
-        }
 
         return {
           id: pred.id,
           created_at: pred.created_at,
           file_name: upload?.file_name || 'Unknown file',
-          heatmap_url: heatmapUrl,
+          heatmap_url: heatmapPath?.startsWith('data:image/') ? heatmapPath : undefined,
           prediction_data: pred.prediction_data,
         }
-      }))
+      })
 
+      if (!isCurrent) return
       setHistory(formattedHistory)
       setIsLoading(false)
+
+      const legacyHeatmaps = predictions
+        .map((pred: any, index: number) => {
+          const heatmapPath = Object.values(pred.prediction_data.heatmaps ?? {})
+            .find((path): path is string => typeof path === 'string' && !path.startsWith('data:image/'))
+          return heatmapPath ? { id: pred.id, index, path: heatmapPath } : null
+        })
+        .filter((entry): entry is { id: string; index: number; path: string } => entry !== null)
+
+      const signedHeatmaps = await Promise.all(legacyHeatmaps.map(async ({ id, index, path }) => {
+        const { data, error: imageError } = await supabase.storage
+          .from('xray-uploads')
+          .createSignedUrl(path, 60 * 60)
+        if (imageError) {
+          console.error(`Error loading history heatmap for ${id}:`, imageError)
+          return null
+        }
+        return { index, url: data.signedUrl }
+      }))
+      if (!isCurrent) return
+      setHistory((items) => {
+        const updatedItems = [...items]
+        signedHeatmaps.forEach((entry) => {
+          if (entry) updatedItems[entry.index] = { ...updatedItems[entry.index], heatmap_url: entry.url }
+        })
+        return updatedItems
+      })
     }
 
     checkAuthAndLoadHistory()
+    return () => {
+      isCurrent = false
+    }
   }, [router, sortBy])
 
   if (!user) {
-    return null
+    return (
+      <main className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8" aria-busy="true">
+        <p className="sr-only">Loading your analysis history</p>
+        <div className="mb-8 space-y-3">
+          <div className="h-8 w-56 animate-pulse rounded-lg bg-secondary/70" />
+          <div className="h-4 w-64 animate-pulse rounded bg-secondary/70" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="glass-card p-6">
+              <div className="mb-4 h-40 animate-pulse rounded-lg bg-secondary/60" />
+              <div className="mb-2 h-4 animate-pulse rounded bg-secondary/60" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-secondary/60" />
+            </div>
+          ))}
+        </div>
+      </main>
+    )
   }
 
   return (

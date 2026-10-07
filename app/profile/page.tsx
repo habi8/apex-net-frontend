@@ -19,7 +19,8 @@ export default function ProfilePage() {
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient()
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const { data: { session }, error } = await supabase.auth.getSession()
+      const user = session?.user
 
       if (error || !user) {
         router.push('/auth/login')
@@ -95,7 +96,26 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    return null
+    return (
+      <main className="mx-auto min-h-screen max-w-2xl px-4 py-8 sm:px-6 lg:px-8" aria-busy="true">
+        <p className="sr-only">Loading your profile</p>
+        <div className="mb-8 space-y-3">
+          <div className="h-8 w-40 animate-pulse rounded-lg bg-secondary/70" />
+          <div className="h-4 w-56 animate-pulse rounded bg-secondary/70" />
+        </div>
+        <div className="glass-card mb-6 space-y-6 p-6">
+          <div className="h-6 w-48 animate-pulse rounded bg-secondary/70" />
+          <div className="h-4 w-32 animate-pulse rounded bg-secondary/70" />
+          <div className="h-4 w-56 animate-pulse rounded bg-secondary/70" />
+          <div className="h-11 w-28 animate-pulse rounded-xl bg-secondary/70" />
+        </div>
+        <div className="glass-card space-y-4 p-6">
+          <div className="h-6 w-36 animate-pulse rounded bg-secondary/70" />
+          <div className="h-4 w-full animate-pulse rounded bg-secondary/70" />
+          <div className="h-11 w-32 animate-pulse rounded-xl bg-secondary/70" />
+        </div>
+      </main>
+    )
   }
 
   return (

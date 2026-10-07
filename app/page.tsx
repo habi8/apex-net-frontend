@@ -63,6 +63,7 @@ export default function LandingPage() {
                 <div className="fade-in-up fade-in-4 mt-6 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start sm:mt-8">
                   <Button
                     render={<Link href="/dashboard" />}
+                    nativeButton={false}
                     className="h-11 w-full rounded-xl px-6 text-sm font-semibold sm:w-auto"
                   >
                     Open workspace
@@ -71,6 +72,7 @@ export default function LandingPage() {
                   <Button
                     variant="outline"
                     render={<Link href="/auth/sign-up" />}
+                    nativeButton={false}
                     className="h-11 w-full rounded-xl px-6 text-sm font-semibold sm:w-auto"
                   >
                     Create account
@@ -112,7 +114,7 @@ export default function LandingPage() {
       <footer className="fade-in fade-in-9 border-t border-border/70 py-6 sm:py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 text-center text-xs text-muted-foreground sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 sm:text-sm">
           <p>&copy; {new Date().getFullYear()} APEX-Net.</p>
-          <p>For research and educational use only. Not for diagnosis or treatment.</p>
+          <p>APEX-Net is not a replacement for professional medical diagnosis, but rather a supportive tool.</p>
         </div>
       </footer>
     </div>

@@ -21,7 +21,8 @@ export default function DashboardPage() {
   useEffect(() => {
     async function checkAuth() {
       const supabase = createClient()
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const { data: { session }, error } = await supabase.auth.getSession()
+      const user = session?.user
 
       if (error || !user) {
         router.push('/auth/login')
@@ -68,7 +69,22 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null
+    return (
+      <main className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8" aria-busy="true">
+        <p className="sr-only">Loading your dashboard</p>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="glass-card space-y-6 p-6 sm:p-8 lg:col-span-2">
+            <div className="h-7 w-40 animate-pulse rounded bg-secondary/70" />
+            <div className="h-4 w-72 max-w-full animate-pulse rounded bg-secondary/70" />
+            <div className="h-64 animate-pulse rounded-2xl bg-secondary/70" />
+          </div>
+          <div className="space-y-6">
+            <div className="glass-card h-48 animate-pulse" />
+            <div className="glass-card h-56 animate-pulse" />
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (

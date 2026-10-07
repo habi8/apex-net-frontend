@@ -1,8 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { LogOut, Menu, X } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { createClient } from '@/lib/supabase/client'
@@ -40,6 +41,18 @@ function getUserDisplayName(user: Props['user']) {
 
 export function AppHeader({ user, links = [], showGreeting = true }: Props) {
   const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isMenuOpen) return
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsMenuOpen(false)
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [isMenuOpen])
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -55,7 +68,7 @@ export function AppHeader({ user, links = [], showGreeting = true }: Props) {
           <Logo size={108} className="site-logo" />
         </Link>
 
-        {/* Nav links - center, only on tablets+ */}
+        {/* Full navigation on wider screens */}
         {links.length > 0 && (
           <nav className="app-header-links" aria-label="Primary">
             {links.map((l) => (
@@ -63,6 +76,7 @@ export function AppHeader({ user, links = [], showGreeting = true }: Props) {
                 key={l.href}
                 href={l.href}
                 className={`glass-button ${l.active ? 'is-active' : ''}`}
+                aria-current={l.active ? 'page' : undefined}
               >
                 {l.label}
               </Link>
@@ -70,7 +84,7 @@ export function AppHeader({ user, links = [], showGreeting = true }: Props) {
           </nav>
         )}
 
-        {/* Right side actions - theme + greeting + sign out */}
+        {/* Actions remain compact on mobile so the menu stays visible. */}
         <div className="site-nav">
           {showGreeting && user && (
             <span className="app-header-greeting">
@@ -82,13 +96,42 @@ export function AppHeader({ user, links = [], showGreeting = true }: Props) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="glass-button glass-button-danger"
+            className="glass-button glass-button-danger app-header-signout"
             aria-label="Sign out"
           >
             <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Sign Out</span>
+            <span className="app-header-signout-label">Sign Out</span>
           </button>
+          {links.length > 0 && (
+            <button
+              type="button"
+              className="glass-button app-header-menu-toggle"
+              aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMenuOpen}
+              aria-controls="app-header-mobile-menu"
+              onClick={() => setIsMenuOpen((open) => !open)}
+            >
+              {isMenuOpen
+                ? <X className="h-4 w-4" aria-hidden="true" />
+                : <Menu className="h-4 w-4" aria-hidden="true" />}
+            </button>
+          )}
         </div>
+        {links.length > 0 && isMenuOpen && (
+          <nav id="app-header-mobile-menu" className="app-header-mobile-menu" aria-label="Primary">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`glass-button ${link.active ? 'is-active' : ''}`}
+                aria-current={link.active ? 'page' : undefined}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
     </header>
   )

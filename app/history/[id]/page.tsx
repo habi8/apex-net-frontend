@@ -39,15 +39,19 @@ export default function ResultDetailPage() {
   const [selectedHeatmap, setSelectedHeatmap] = useState('')
 
   useEffect(() => {
+    let isCurrent = true
+
     async function checkAuthAndLoadResult() {
       const supabase = createClient()
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const { data: { session }, error } = await supabase.auth.getSession()
+      const user = session?.user
 
       if (error || !user) {
         router.push('/auth/login')
         return
       }
 
+      if (!isCurrent) return
       setUser(user)
 
       const { data: predictions, error: fetchError } = await supabase
@@ -73,6 +77,28 @@ export default function ResultDetailPage() {
         ? predictions.xray_uploads[0]
         : predictions.xray_uploads
       const storedHeatmaps = predictions.prediction_data.heatmaps ?? {}
+      const immediateHeatmaps = Object.fromEntries(
+        Object.entries(storedHeatmaps).map(([label, path]) => [
+          label,
+          typeof path === 'string' && path.startsWith('data:image/') ? path : '',
+        ]),
+      )
+      const resultWithoutLegacyHeatmaps = {
+        id: predictions.id,
+        created_at: predictions.created_at,
+        file_name: upload?.file_name || 'Unknown file',
+        prediction_data: { ...predictions.prediction_data, heatmaps: immediateHeatmaps },
+      }
+
+      if (!isCurrent) return
+      setResult(resultWithoutLegacyHeatmaps)
+      setSelectedHeatmap(
+        Object.keys(immediateHeatmaps).find((label) => immediateHeatmaps[label]) ??
+        Object.keys(storedHeatmaps)[0] ??
+        '',
+      )
+      setIsLoading(false)
+
       const heatmaps = Object.fromEntries(
         await Promise.all(
           Object.entries(storedHeatmaps).map(async ([label, path]) => {
@@ -93,21 +119,28 @@ export default function ResultDetailPage() {
           }),
         ),
       )
+      if (!isCurrent) return
       setResult({
-        id: predictions.id,
-        created_at: predictions.created_at,
-        file_name: upload?.file_name || 'Unknown file',
+        ...resultWithoutLegacyHeatmaps,
         prediction_data: { ...predictions.prediction_data, heatmaps },
       })
-      setSelectedHeatmap(Object.keys(heatmaps).find((label) => heatmaps[label]) ?? '')
-      setIsLoading(false)
     }
 
     checkAuthAndLoadResult()
+    return () => {
+      isCurrent = false
+    }
   }, [router, resultId])
 
   if (!user) {
-    return null
+    return (
+      <main className="mx-auto min-h-screen max-w-4xl space-y-4 px-4 py-8" aria-busy="true">
+        <p className="sr-only">Loading analysis details</p>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="glass-card h-20 animate-pulse" />
+        ))}
+      </main>
+    )
   }
 
   if (isLoading) {
