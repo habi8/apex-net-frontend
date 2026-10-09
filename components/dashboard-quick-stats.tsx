@@ -186,21 +186,21 @@ export function DashboardQuickStats({
   const detailContent = (
     <>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-2xl bg-primary/5 p-4">
+        <div className="rounded-2xl bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">Total analyses</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{records.length}</p>
         </div>
-        <div className="rounded-2xl bg-primary/5 p-4">
+        <div className="rounded-2xl bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">Avg. top score</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">
             {(stats.averageConfidence * 100).toFixed(1)}%
           </p>
         </div>
-        <div className="rounded-2xl bg-primary/5 p-4">
+        <div className="rounded-2xl bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">High-score findings</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{stats.highConfidenceFindingCount}</p>
         </div>
-        <div className="rounded-2xl bg-primary/5 p-4">
+        <div className="rounded-2xl bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">Labels tracked</p>
           <p className="mt-1 text-2xl font-semibold text-foreground">{stats.diseases.length}</p>
         </div>

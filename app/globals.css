@@ -575,7 +575,7 @@ input[type='reset'] {
     }
   }
 
-  .app-header-menu-toggle {
+  .glass-button.app-header-menu-toggle {
     display: inline-flex;
     width: 2.5rem;
     padding: 0;
@@ -626,7 +626,7 @@ input[type='reset'] {
   }
 
   @media (min-width: 768px) {
-    .app-header-menu-toggle {
+    .glass-button.app-header-menu-toggle {
       display: none;
     }
 
