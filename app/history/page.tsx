@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { AppHeader } from '@/components/app-header'
 
+const HISTORY_PAGE_SIZE = 10
+
 interface HistoryItem {
   id: string
   created_at: string
@@ -19,11 +21,64 @@ interface HistoryItem {
   }
 }
 
+interface HistoryQueryRow {
+  id: string
+  created_at: string
+  xray_uploads: { file_name: string } | { file_name: string }[] | null
+  prediction_data: HistoryItem['prediction_data'] & {
+    heatmaps?: Record<string, string>
+  }
+}
+
+async function formatHistoryRows(
+  supabase: ReturnType<typeof createClient>,
+  predictions: HistoryQueryRow[],
+): Promise<HistoryItem[]> {
+  const items = predictions.map((prediction) => {
+    const upload = Array.isArray(prediction.xray_uploads)
+      ? prediction.xray_uploads[0]
+      : prediction.xray_uploads
+    const heatmapPath = Object.values(prediction.prediction_data.heatmaps ?? {})
+      .find((path) => typeof path === 'string')
+
+    return {
+      id: prediction.id,
+      created_at: prediction.created_at,
+      file_name: upload?.file_name || 'Unknown file',
+      heatmap_url: heatmapPath?.startsWith('data:image/') ? heatmapPath : undefined,
+      prediction_data: prediction.prediction_data,
+    }
+  })
+
+  const signedHeatmaps = await Promise.all(predictions.map(async (prediction, index) => {
+    const path = Object.values(prediction.prediction_data.heatmaps ?? {})
+      .find((value) => typeof value === 'string' && !value.startsWith('data:image/'))
+    if (!path) return null
+
+    const { data, error } = await supabase.storage
+      .from('xray-uploads')
+      .createSignedUrl(path, 60 * 60)
+    if (error) {
+      console.error(`Error loading history heatmap for ${prediction.id}:`, error)
+      return null
+    }
+    return { index, url: data.signedUrl }
+  }))
+
+  signedHeatmaps.forEach((entry) => {
+    if (entry) items[entry.index].heatmap_url = entry.url
+  })
+  return items
+}
+
 export default function HistoryPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
+  const [historyError, setHistoryError] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
@@ -98,22 +153,15 @@ export default function HistoryPage() {
     setDeleteError('')
   }
 
-  useEffect(() => {
-    let isCurrent = true
+  async function loadMoreHistory() {
+    if (!user || isLoadingMore || !hasMore) return
 
-    async function checkAuthAndLoadHistory() {
+    setIsLoadingMore(true)
+    setHistoryError('')
+    try {
       const supabase = createClient()
-      const { data: { session }, error } = await supabase.auth.getSession()
-      const user = session?.user
-
-      if (error || !user) {
-        router.push('/auth/login')
-        return
-      }
-
-      setUser(user)
-
-      const { data: predictions, error: fetchError } = await supabase
+      const offset = history.length
+      const { data, error } = await supabase
         .from('predictions')
         .select(`
           id,
@@ -123,60 +171,74 @@ export default function HistoryPage() {
             file_name
           )
         `)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: sortBy === 'oldest' })
+        .range(offset, offset + HISTORY_PAGE_SIZE)
 
-      if (fetchError) {
-        console.error('Error loading history:', fetchError)
-        setIsLoading(false)
-        return
+      if (error) throw error
+
+      const rows = (data ?? []) as HistoryQueryRow[]
+      const page = await formatHistoryRows(supabase, rows.slice(0, HISTORY_PAGE_SIZE))
+      setHistory((items) => [...items, ...page])
+      setHasMore(rows.length > HISTORY_PAGE_SIZE)
+    } catch (error) {
+      console.error('Error loading more history:', error)
+      setHistoryError('Unable to load more analysis history. Please try again.')
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
+
+  useEffect(() => {
+    let isCurrent = true
+
+    async function checkAuthAndLoadHistory() {
+      setIsLoading(true)
+      setHistoryError('')
+      setHasMore(false)
+      setHistory([])
+      try {
+        const supabase = createClient()
+        const { data: { session }, error: authError } = await supabase.auth.getSession()
+        const user = session?.user
+
+        if (authError || !user) {
+          router.push('/auth/login')
+          return
+        }
+
+        if (!isCurrent) return
+        setUser(user)
+
+        const { data, error } = await supabase
+          .from('predictions')
+          .select(`
+            id,
+            created_at,
+            prediction_data,
+            xray_uploads (
+              file_name
+            )
+          `)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: sortBy === 'oldest' })
+          .range(0, HISTORY_PAGE_SIZE)
+
+        if (error) throw error
+
+        const rows = (data ?? []) as HistoryQueryRow[]
+        const page = await formatHistoryRows(supabase, rows.slice(0, HISTORY_PAGE_SIZE))
+        if (!isCurrent) return
+        setHistory(page)
+        setHasMore(rows.length > HISTORY_PAGE_SIZE)
+      } catch (error) {
+        console.error('Error loading history:', error)
+        if (isCurrent) {
+          setHistoryError('Unable to load analysis history. Please try again.')
+        }
+      } finally {
+        if (isCurrent) setIsLoading(false)
       }
-
-      const formattedHistory = predictions.map((pred: any) => {
-        const upload = Array.isArray(pred.xray_uploads)
-          ? pred.xray_uploads[0]
-          : pred.xray_uploads
-        const heatmapPath = Object.values(pred.prediction_data.heatmaps ?? {})
-          .find((path): path is string => typeof path === 'string')
-
-        return {
-          id: pred.id,
-          created_at: pred.created_at,
-          file_name: upload?.file_name || 'Unknown file',
-          heatmap_url: heatmapPath?.startsWith('data:image/') ? heatmapPath : undefined,
-          prediction_data: pred.prediction_data,
-        }
-      })
-
-      if (!isCurrent) return
-      setHistory(formattedHistory)
-      setIsLoading(false)
-
-      const legacyHeatmaps = predictions
-        .map((pred: any, index: number) => {
-          const heatmapPath = Object.values(pred.prediction_data.heatmaps ?? {})
-            .find((path): path is string => typeof path === 'string' && !path.startsWith('data:image/'))
-          return heatmapPath ? { id: pred.id, index, path: heatmapPath } : null
-        })
-        .filter((entry): entry is { id: string; index: number; path: string } => entry !== null)
-
-      const signedHeatmaps = await Promise.all(legacyHeatmaps.map(async ({ id, index, path }) => {
-        const { data, error: imageError } = await supabase.storage
-          .from('xray-uploads')
-          .createSignedUrl(path, 60 * 60)
-        if (imageError) {
-          console.error(`Error loading history heatmap for ${id}:`, imageError)
-          return null
-        }
-        return { index, url: data.signedUrl }
-      }))
-      if (!isCurrent) return
-      setHistory((items) => {
-        const updatedItems = [...items]
-        signedHeatmaps.forEach((entry) => {
-          if (entry) updatedItems[entry.index] = { ...updatedItems[entry.index], heatmap_url: entry.url }
-        })
-        return updatedItems
-      })
     }
 
     checkAuthAndLoadHistory()
@@ -228,13 +290,17 @@ export default function HistoryPage() {
           {!isSelecting && (
             <>
               <button
+                type="button"
                 onClick={() => setSortBy('newest')}
+                disabled={isLoadingMore}
                 className={`glass-button ${sortBy === 'newest' ? 'is-active' : ''}`}
               >
                 Newest First
               </button>
               <button
+                type="button"
                 onClick={() => setSortBy('oldest')}
+                disabled={isLoadingMore}
                 className={`glass-button ${sortBy === 'oldest' ? 'is-active' : ''}`}
               >
                 Oldest First
@@ -282,6 +348,10 @@ export default function HistoryPage() {
               </div>
             ))}
           </div>
+        ) : history.length === 0 && historyError ? (
+          <p role="alert" className="glass-card p-6 text-sm text-red-700 dark:text-red-300">
+            {historyError}
+          </p>
         ) : history.length === 0 ? (
           <div className="glass-card text-center py-12 px-6">
             <p className="text-muted-foreground mb-4">No analyses yet</p>
@@ -381,6 +451,23 @@ export default function HistoryPage() {
                 </div>
               )
             })}
+          </div>
+        )}
+        {historyError && history.length > 0 && (
+          <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">
+            {historyError}
+          </p>
+        )}
+        {!isLoading && hasMore && (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => void loadMoreHistory()}
+              disabled={isLoadingMore}
+              className="glass-button h-11 min-w-40 px-6 disabled:opacity-50"
+            >
+              {isLoadingMore ? 'Loading...' : 'Show 10 more'}
+            </button>
           </div>
         )}
         {deleteError && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{deleteError}</p>}

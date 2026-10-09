@@ -33,15 +33,17 @@ interface SelectedAnalysis {
 }
 
 interface AnalysisHistoryProps {
+  userId: string
   refreshTrigger?: number
   onDelete?: (id: string) => void
 }
 
-export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistoryProps) {
+export function AnalysisHistory({ userId, refreshTrigger = 0, onDelete }: AnalysisHistoryProps) {
   const [history, setHistory] = useState<AnalysisRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; fileName: string } | null>(null)
   const [selectedAnalysis, setSelectedAnalysis] = useState<SelectedAnalysis | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -89,7 +91,7 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
 
     const previousOverflow = document.body.style.overflow
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeAnalysis()
+      if (event.key === 'Escape' && !pendingDelete) closeAnalysis()
     }
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', handleKeyDown)
@@ -97,13 +99,22 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isMounted])
+  }, [isMounted, pendingDelete])
+
+  useEffect(() => {
+    if (!pendingDelete) return
+
+    function closeDeleteDialog(event: KeyboardEvent) {
+      if (event.key === 'Escape' && deletingId === null) {
+        setPendingDelete(null)
+        setDeleteError('')
+      }
+    }
+    window.addEventListener('keydown', closeDeleteDialog)
+    return () => window.removeEventListener('keydown', closeDeleteDialog)
+  }, [pendingDelete, deletingId])
 
   async function deleteAnalysis(id: string) {
-    if (!window.confirm('Delete this analysis from your history?')) {
-      return
-    }
-
     setDeletingId(id)
     setDeleteError('')
     try {
@@ -114,6 +125,7 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
       }
       setHistory((records) => records.filter((record) => record.id !== id))
       if (selectedAnalysis?.record.id === id) closeAnalysis()
+      setPendingDelete(null)
       onDelete?.(id)
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Unable to delete this analysis')
@@ -137,8 +149,9 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
               file_name
             )
           `)
-          .order('created_at', { ascending: false })
-          .limit(5)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(5)
 
         if (error) {
           console.error('Error loading history:', error)
@@ -154,7 +167,7 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
     }
 
     loadHistory()
-  }, [refreshTrigger])
+  }, [refreshTrigger, userId])
 
   if (isLoading) {
     return (
@@ -214,12 +227,15 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
                 </button>
                 <button
                   type="button"
-                  onClick={() => deleteAnalysis(record.id)}
+                  onClick={() => {
+                    setDeleteError('')
+                    setPendingDelete({ id: record.id, fileName })
+                  }}
                   disabled={deletingId !== null}
                   aria-label={`Delete analysis ${fileName}`}
                   className="mt-2 text-xs font-medium text-red-700 hover:underline disabled:opacity-50 dark:text-red-300"
                 >
-                  {deletingId === record.id ? 'Deleting...' : 'Delete'}
+                  Delete
                 </button>
               </div>
             )
@@ -312,6 +328,59 @@ export function AnalysisHistory({ refreshTrigger = 0, onDelete }: AnalysisHistor
                 </ul>
               </section>
             )}
+          </section>
+        </div>,
+        document.body,
+      )}
+      {pendingDelete && createPortal(
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-md"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && deletingId === null) {
+              setPendingDelete(null)
+              setDeleteError('')
+            }
+          }}
+        >
+          <section
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-analysis-title"
+            aria-describedby="delete-analysis-description"
+            className="glass-card w-full max-w-md border border-red-500/20 p-6 shadow-2xl"
+          >
+            <h2 id="delete-analysis-title" className="text-lg font-semibold text-foreground">
+              Delete this analysis?
+            </h2>
+            <p id="delete-analysis-description" className="mt-2 break-words text-sm text-muted-foreground">
+              This will permanently remove the analysis for <span className="font-medium text-foreground">{pendingDelete.fileName}</span> from your history.
+            </p>
+            {deleteError && (
+              <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
+                {deleteError}
+              </p>
+            )}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingDelete(null)
+                  setDeleteError('')
+                }}
+                disabled={deletingId !== null}
+                className="glass-button h-10 px-4 text-sm font-semibold disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void deleteAnalysis(pendingDelete.id)}
+                disabled={deletingId !== null}
+                className="glass-button-danger glass-button h-10 px-4 text-sm font-semibold disabled:pointer-events-none disabled:opacity-50"
+              >
+                {deletingId === pendingDelete.id ? 'Deleting...' : 'Delete analysis'}
+              </button>
+            </div>
           </section>
         </div>,
         document.body,

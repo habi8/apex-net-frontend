@@ -4,13 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 interface PredictionRecord {
+  id: string
   created_at: string
-  prediction_data: {
-    findings?: Array<{
-      label: string
-      confidence: number
-    }>
-  } | null
+  findings: Array<{
+    label: string
+    confidence: number
+  }> | null
 }
 
 interface DashboardQuickStatsProps {
@@ -22,6 +21,31 @@ interface DiseaseFrequency {
   label: string
   count: number
   percentage: number
+}
+
+const STATS_PAGE_SIZE = 100
+
+async function loadUserPredictionRecords(
+  userId: string,
+): Promise<PredictionRecord[]> {
+  const supabase = createClient()
+  const records: PredictionRecord[] = []
+
+  for (let offset = 0; ; offset += STATS_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('id, created_at, findings:prediction_data->findings')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(offset, offset + STATS_PAGE_SIZE - 1)
+
+    if (error) throw error
+
+    const page = (data ?? []) as PredictionRecord[]
+    records.push(...page)
+    if (page.length < STATS_PAGE_SIZE) return records
+  }
 }
 
 function DiseaseFrequencyChart({
@@ -77,32 +101,23 @@ export function DashboardQuickStats({
     setIsLoading(true)
     setError('')
     try {
-      const supabase = createClient()
-      const { data, error: queryError } = await supabase
-        .from('predictions')
-        .select('created_at, prediction_data')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (queryError) {
-        console.error(
-          `Error loading dashboard stats (${queryError.code}): ${queryError.message}`,
-          {
-            details: queryError.details,
-            hint: queryError.hint,
-          },
-        )
-        setError(`Unable to load analysis statistics: ${queryError.message}`)
-        return
-      }
-
-      setRecords((data ?? []) as PredictionRecord[])
+      setRecords(await loadUserPredictionRecords(userId))
     } catch (loadError) {
       const message = loadError instanceof Error
         ? loadError.message
         : 'An unexpected error occurred.'
-      console.error(`Error loading dashboard stats: ${message}`, loadError)
-      setError(`Unable to load analysis statistics: ${message}`)
+      const code = loadError instanceof Error &&
+        'code' in loadError &&
+        typeof loadError.code === 'string'
+        ? loadError.code
+        : null
+      console.error(
+        code
+          ? `Error loading dashboard stats (${code}): ${message}`
+          : `Error loading dashboard stats: ${message}`,
+        loadError,
+      )
+      setError(`Unable to load analysis statistics${code ? ` (${code})` : ''}: ${message}`)
     } finally {
       setIsLoading(false)
     }
@@ -139,7 +154,7 @@ export function DashboardQuickStats({
 
   const stats = useMemo(() => {
     const confidenceScores = records.map((record) => {
-      const findings = record.prediction_data?.findings ?? []
+      const findings = record.findings ?? []
       return Math.max(0, ...findings.map((finding) => finding.confidence))
     })
     const averageConfidence = confidenceScores.length
@@ -150,7 +165,7 @@ export function DashboardQuickStats({
 
     for (const record of records) {
       const qualifyingLabels = new Set(
-        (record.prediction_data?.findings ?? [])
+        (record.findings ?? [])
           .filter((finding) => finding.confidence >= 0.5)
           .map((finding) => finding.label),
       )
@@ -220,7 +235,7 @@ export function DashboardQuickStats({
       </section>
 
       <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-        <div className="rounded-xl border border-border/60 p-4">
+        <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">Most frequent finding</p>
           <p className="mt-1 font-semibold text-foreground">
             {stats.leadingDisease
@@ -228,7 +243,7 @@ export function DashboardQuickStats({
               : 'No findings at or above 50%'}
           </p>
         </div>
-        <div className="rounded-xl border border-border/60 p-4">
+        <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
           <p className="text-xs text-muted-foreground">Most recent analysis</p>
           <p className="mt-1 font-semibold text-foreground">
             {stats.latestAnalysis ? new Date(stats.latestAnalysis).toLocaleString() : 'No analyses yet'}

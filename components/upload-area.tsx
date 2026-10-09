@@ -166,9 +166,31 @@ export function UploadArea({
       )}
 
       {progress === 100 && isAnalyzing && (
-        <div role="status" aria-live="polite" className="mt-4 flex items-center gap-3 p-3 bg-primary/10 border-l-4 border-primary text-foreground rounded-xl text-sm">
-          <span aria-hidden="true" className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-          Analyzing your X-ray...
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          className="mt-4 overflow-hidden rounded-2xl border border-primary/15 bg-primary/10 p-4 shadow-sm"
+        >
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Analyzing your X-ray</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Generating model scores and attention heatmaps
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-semibold tracking-wider text-primary">
+              IN PROGRESS
+            </span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="X-ray analysis progress"
+            aria-valuetext="Analysis in progress"
+            className="analysis-progress-track"
+          >
+            <span aria-hidden="true" className="analysis-progress-indicator" />
+          </div>
         </div>
       )}
 

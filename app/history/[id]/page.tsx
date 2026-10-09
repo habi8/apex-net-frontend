@@ -65,6 +65,7 @@ export default function ResultDetailPage() {
           )
         `)
         .eq('id', resultId)
+        .eq('user_id', user.id)
         .single()
 
       if (fetchError) {

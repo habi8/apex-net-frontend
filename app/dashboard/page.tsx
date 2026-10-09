@@ -142,6 +142,7 @@ export default function DashboardPage() {
             />
 
             <AnalysisHistory
+              userId={user.id}
               refreshTrigger={historyRefresh}
               onDelete={(id) => {
                 setCurrentPrediction((prediction: { id?: string } | null) =>
