@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 interface PredictionRecord {
   id: string
   created_at: string
-  findings: Array<{
+  confidence_score: number | null
+  findings_summary: Array<{
     label: string
     confidence: number
   }> | null
@@ -34,7 +35,7 @@ async function loadUserPredictionRecords(
   for (let offset = 0; ; offset += STATS_PAGE_SIZE) {
     const { data, error } = await supabase
       .from('predictions')
-      .select('id, created_at, findings:prediction_data->findings')
+      .select('id, created_at, confidence_score, findings_summary')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
@@ -103,13 +104,14 @@ export function DashboardQuickStats({
     try {
       setRecords(await loadUserPredictionRecords(userId))
     } catch (loadError) {
-      const message = loadError instanceof Error
-        ? loadError.message
-        : 'An unexpected error occurred.'
-      const code = loadError instanceof Error &&
-        'code' in loadError &&
-        typeof loadError.code === 'string'
-        ? loadError.code
+      const errorDetails = typeof loadError === 'object' && loadError !== null &&
+        'message' in loadError && typeof loadError.message === 'string'
+        ? loadError
+        : null
+      const message = errorDetails?.message ?? 'An unexpected error occurred.'
+      const code = errorDetails && 'code' in errorDetails &&
+        typeof errorDetails.code === 'string'
+        ? errorDetails.code
         : null
       console.error(
         code
@@ -153,10 +155,10 @@ export function DashboardQuickStats({
   }, [isMounted])
 
   const stats = useMemo(() => {
-    const confidenceScores = records.map((record) => {
-      const findings = record.findings ?? []
-      return Math.max(0, ...findings.map((finding) => finding.confidence))
-    })
+    const confidenceScores = records.map((record) =>
+      record.confidence_score ??
+      Math.max(0, ...(record.findings_summary ?? []).map((finding) => finding.confidence)),
+    )
     const averageConfidence = confidenceScores.length
       ? confidenceScores.reduce((total, score) => total + score, 0) / confidenceScores.length
       : 0
@@ -165,7 +167,7 @@ export function DashboardQuickStats({
 
     for (const record of records) {
       const qualifyingLabels = new Set(
-        (record.findings ?? [])
+        (record.findings_summary ?? [])
           .filter((finding) => finding.confidence >= 0.5)
           .map((finding) => finding.label),
       )
